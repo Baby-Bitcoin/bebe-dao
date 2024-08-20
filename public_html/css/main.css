@@ -341,7 +341,7 @@ code:before {
   float: left;
   content: '';
   width: 32px;
-  height: 32px;
+  height: 42px;
   background: var(--logo);
   background-size: 100%;
 }
@@ -522,9 +522,9 @@ code:before {
 }
 
 #stats img {
-  width: 23px;
-  height: 16px;
-  margin: 0 1px 0 6px
+  width: 18px;
+  height: 23px;
+  margin: 0 5px 0 6px
 }
 
 #stats b {
