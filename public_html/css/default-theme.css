@@ -1,0 +1,83 @@
+:root {
+    --logo: url(/img/bebe-logo-transparent.png) no-repeat 50% 50%;
+    --black: #000000;
+    --white: #ffffff;
+    --h1: #232323;
+    --main-bg-color: #ffffff;
+    --main-contrast: #ffffff;
+    --main-header-bg: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 30%);
+    --second-contrast: #000000;
+    --second-contrast-50: #00000050;
+    --second-contrast-23: #00000023;
+    --second-contrast-32: #00000032;
+    --second-contrast-69: #00000069;
+    --second-contrast-99: #00000099;
+    --second-contrast-09: #00000009;
+    --menu-options-bg: #ffffff;
+    --menu-options-border: #ffffff;
+    --menu-button: #ffffff;
+    --menu-button-hover: #9cccff;
+    --menu-triangle: #9cccff;
+    --bright-gray: #ececec;
+    --features-b: #000000;
+    --article-bg: #ececec;
+    --article-shadow: #00000009;
+    --search-bg: #ffffff;
+    --input-bg: #eeeeee;
+    --input-border: #000000;
+    --select-type-bg: #ececec;
+    --select-type-border: #ececec;
+    --gray: #808080;
+    --footer: #000000;
+    --footer-link: #232323;
+    --footer-link-secondary: #23232399;
+    --gray-69: #696969;
+    --main-color: #0274f9;
+    --image-user: #ffffff;
+    --image-user-shadow: #000000;
+
+    --invert: invert(0);
+    --contrast-filter: contrast(1);
+    --brightness: brightness(1);
+
+    --comments-textarea-bg: #ffffff;
+    --comments-textarea-color: #000000;
+
+    --notification-bg: #00ff0008;
+    --notification-border: 1px solid rgba(0, 128, 0, 0.205);
+
+    --code-bg: #daecff;
+    --code-border: 1px dashed #9fccff;
+    --code-color: #012453;
+
+    --proposal-color: #288cff;
+    --issue-color: #ff5c5c;
+    --poll-color: #13ca2c;
+    --election-color: #c7ca13;
+    --main-color-dark: #012453;
+
+    --bright-blue: #9cccff;
+    --ink-blue: #3b5998;
+    --sub-header-bg: #e0eeff;
+    --sub-header-border: #cfe6ff;
+    --slider-border: #0274f9;
+    --switch-bg: url(/svgs/lightdark.svg) no-repeat 50% 50%;
+    --red: #ff4646;
+    --red-50: #ff464650;
+
+    --option-color-1: #36a2eb;
+    --option-color-2: #ff6384;
+    --option-color-3: #ff9f40;
+    --option-color-4: #4bc0c0;
+    --option-color-5: #9966ff;
+    --option-color-6: #ffcd56;
+    --option-color-7: #63ff96;
+    --option-color-8: #ee63ff;
+    --option-color-9: #63f6ff;
+
+}
+
+html,
+body {
+    background-color: var(--main-bg-color);
+}

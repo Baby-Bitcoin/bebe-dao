@@ -1,24 +1,16 @@
-import Redis from 'ioredis';
-import dotenv from 'dotenv';
+const Redis = require('ioredis');
+const dotenv = require('dotenv');
 
 dotenv.config({
     path: ".env",
 });
 
-// Extend Redis types to include custom commands for JSON
-declare module 'ioredis' {
-    interface Redis {
-        jsonset: (key: string, path: string, json: string) => Promise<string>;
-        jsonget: (key: string) => Promise<string>;
-    }
-}
-
 class RedisClient {
-    private static instances: { [key: number]: Redis } = {};
+    static instances = {};
 
-    private constructor() { }
+    constructor() { }
 
-    public static getInstance(dbNumber: number = 0): Redis {
+    static getInstance(dbNumber = 0) {
         if (!RedisClient.instances[dbNumber]) {
             RedisClient.instances[dbNumber] = new Redis({
                 host: process.env.REDIS_HOST || '127.0.0.1',
@@ -40,20 +32,20 @@ class RedisClient {
         return RedisClient.instances[dbNumber];
     }
 
-    public static async jsonset(dbNumber: number, key: string, path: string, json: string): Promise<string> {
+    static async jsonset(dbNumber, key, path, json) {
         const instance = this.getInstance(dbNumber);
         return instance.jsonset(key, path, json);
     }
 
-    public static async jsonget(dbNumber: number, key: string): Promise<string> {
+    static async jsonget(dbNumber, key) {
         const instance = this.getInstance(dbNumber);
         return instance.jsonget(key);
     }
 
-    public static async scan(dbNumber: number, pattern: string = '*', count: number = 1000): Promise<string[]> {
+    static async scan(dbNumber, pattern = '*', count = 1000) {
         const instance = this.getInstance(dbNumber);
         let cursor = '0';
-        let keys: string[] = [];
+        let keys = [];
 
         do {
             const result = await instance.scan(cursor, 'MATCH', pattern, 'COUNT', count);
@@ -64,10 +56,10 @@ class RedisClient {
         return keys;
     }
 
-    public static async delete(dbNumber: number, key: string): Promise<number> {
+    static async delete(dbNumber, key) {
         const instance = this.getInstance(dbNumber);
         return instance.del(key);
     }
 }
 
-export default RedisClient;
+module.exports = RedisClient;
