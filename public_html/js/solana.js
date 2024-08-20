@@ -52,8 +52,8 @@ $('#close-features').addEventListener("click", e => {
 
 
 // Login in function that is called when the login button is clicked
-export const login = async (restoreSession) => {
-
+export const login = async () => {
+    wallets.classList.remove('hide')
 }
 
 // Logout function sets the link and session back to original state of undefined
@@ -68,7 +68,9 @@ const logout = async () => {
 }
 
 // Add button listeners
-loginButton.addEventListener("click", () => login(false))
-logoutButton.addEventListener("click", () => logout())
-// Restore
-login(true)
+loginButton.addEventListener("click", e => login(false))
+logoutButton.addEventListener("click", e => logout())
+
+$('#wallets .modal_close').addEventListener("click", e => {
+    wallets.classList.add('hide')
+})
