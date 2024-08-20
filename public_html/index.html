@@ -50,12 +50,6 @@
 </head>
 
 <body>
-    <div class="menu_modal hide">
-        <b class="modal_close mb64"></b>
-        <button style="background-color: #AB9FF2; color: white"><img src="/svgs/phantom.svg" /> Phantom</button>
-        <button><img src="/img/solflare.png" /> Solflare</button>
-        <button><img src="/svgs/walletconnect.svg" /> Wallet Connect</button>
-    </div>
     <div id="loader"><b>Loading</b></div>
     <div class="shortMessage"></div>
     <style id="root_variables"></style>
@@ -63,6 +57,15 @@
         <path
             d="M4 10h24a2 2 0 0 0 0-4H4a2 2 0 0 0 0 4zm24 4H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zm0 8H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z" />
     </svg>
+
+    <div id="wallets" class="menu_modal hide">
+        <b class="modal_close mb64"></b>
+        <button style="background-color: #AB9FF2; color: white"><img src="/svgs/phantom.svg" /> Phantom</button>
+        <button><img src="/img/solflare.png" /> Solflare</button>
+        <button><img src="/svgs/walletconnect.svg" /> Wallet Connect</button>
+    </div>
+
+
     <header id="main_header">
         <div class="main-header">
             <a class="logo" href="/"></a>
