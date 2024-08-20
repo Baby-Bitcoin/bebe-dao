@@ -139,6 +139,80 @@ import RedisClient from './RedisClient';
 })();
 ```
 
+To configure Redis to use Append Only File (AOF) with `appendonly yes` and `appendfsync always`, follow these steps:
+
+### Step 1: Locate Your Redis Configuration File
+The Redis configuration file is typically named `redis.conf`. You need to locate this file, which can usually be found in one of the following locations:
+
+- `/etc/redis/redis.conf` (Linux)
+- `/usr/local/etc/redis.conf` (MacOS when installed via Homebrew)
+- The directory where Redis was installed or compiled from source.
+
+### Step 2: Edit the `redis.conf` File
+Open the `redis.conf` file in your favorite text editor. You may need superuser (root) privileges to edit this file.
+
+```bash
+sudo nano /etc/redis/redis.conf
+```
+
+### Step 3: Enable AOF (Append Only File)
+Find the line that starts with `appendonly` in the configuration file. By default, it might be set to `no`.
+
+Change it to `yes`:
+
+```bash
+appendonly yes
+```
+
+### Step 4: Set AOF Synchronization to `always`
+Locate the line that starts with `appendfsync`. This setting controls how often Redis flushes the AOF buffer to disk. By default, it might be set to `everysec` or `no`.
+
+Change it to `always`:
+
+```bash
+appendfsync always
+```
+
+### Step 5: Save and Exit the Configuration File
+After making the changes, save the file and exit the text editor.
+
+For `nano`, you can do this by pressing `CTRL + O` to write the changes, and then `CTRL + X` to exit.
+
+### Step 6: Restart Redis Server
+To apply the changes, you need to restart the Redis server.
+
+If you are using a service manager like `systemd`, you can restart Redis with:
+
+```bash
+sudo systemctl restart redis
+```
+
+Or, if Redis was started manually or through another method, use the appropriate command to restart it.
+
+### Step 7: Verify the Configuration
+To ensure that Redis is running with the correct configuration, you can connect to the Redis instance and check the AOF status:
+
+1. Connect to Redis using the Redis CLI:
+
+   ```bash
+   redis-cli
+   ```
+
+2. Run the following commands to check the AOF configuration:
+
+   ```bash
+   CONFIG GET appendonly
+   CONFIG GET appendfsync
+   ```
+
+   The output should confirm that `appendonly` is set to `yes` and `appendfsync` is set to `always`.
+
+### Additional Considerations
+- **Performance Impact**: Setting `appendfsync` to `always` ensures maximum durability, but it can have a significant performance impact because Redis will write to disk after every write operation. Consider the performance implications in your environment.
+- **Disk Usage**: AOF files can grow large over time. Regularly monitoring and managing disk space is essential. You can also periodically run the `BGREWRITEAOF` command to compact the AOF file.
+
+This configuration ensures that Redis persists every write operation to disk immediately, providing the highest level of data durability at the cost of reduced performance.
+
 ---
 
 This documentation should provide a comprehensive guide to using the `RedisClient` class in your Node.js project. The examples demonstrate basic operations like setting and getting JSON data, scanning keys, and deleting keys from the Redis store.
