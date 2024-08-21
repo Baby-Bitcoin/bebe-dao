@@ -14,7 +14,7 @@ const getAllAvailableWallets = (): any[] => {
   const trustWallet = {
     name: "Trust Wallet",
     logo: "/svgs/walletconnect.svg",
-    adapter: window.trustWallet.solana,
+    adapter: window?.trustWallet?.solana,
     forced: true,
   };
 
