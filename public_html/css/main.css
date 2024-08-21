@@ -1365,9 +1365,8 @@ canvas {
     padding-top: 12px;
   }
 
-  .features .grid-6 {
-    grid-template-rows: repeat(3, 1fr);
-    grid-template-columns: repeat(2, 1fr);
+  .features .grid-3 {
+    display: block;
   }
 
   .first-paragraph i {
