@@ -18,24 +18,24 @@ const getAllAvailableWallets = (): any[] => {
     forced: true,
   };
 
-  // if (window?.phantom?.solana) {
-  //   wallets.push({
-  //     name: "Phantom",
-  //     logo: "/svgs/phantom.svg",
-  //     style: "background-color: #AB9FF2; color: white",
-  //     adapter: window.phantom.solana,
-  //   });
-  // }
-  // if (window?.trustWallet?.solana) {
-  //   wallets.push({ ...trustWallet, forced: true });
-  // }
-  // if (window?.solflare) {
-  //   wallets.push({
-  //     name: "Solflare",
-  //     logo: "/img/solflare.png",
-  //     adapter: window.solflare,
-  //   });
-  // }
+  if (window?.phantom?.solana) {
+    wallets.push({
+      name: "Phantom",
+      logo: "/svgs/phantom.svg",
+      style: "background-color: #AB9FF2; color: white",
+      adapter: window.phantom.solana,
+    });
+  }
+  if (window?.trustWallet?.solana) {
+    wallets.push({ ...trustWallet, forced: true });
+  }
+  if (window?.solflare) {
+    wallets.push({
+      name: "Solflare",
+      logo: "/img/solflare.png",
+      adapter: window.solflare,
+    });
+  }
 
   if (wallets.length == 0) {
     wallets.push(trustWallet);
