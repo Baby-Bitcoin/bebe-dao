@@ -58,11 +58,9 @@
             d="M4 10h24a2 2 0 0 0 0-4H4a2 2 0 0 0 0 4zm24 4H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zm0 8H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z" />
     </svg>
 
-    <div id="wallets" class="menu_modal hide">
+    <div id="modal" class="menu_modal hide">
         <b class="modal_close mb64"></b>
-        <button style="background-color: #AB9FF2; color: white"><img src="/svgs/phantom.svg" /> Phantom</button>
-        <button><img src="/img/solflare.png" /> Solflare</button>
-        <button><img src="/svgs/walletconnect.svg" /> Wallet Connect</button>
+        <div class="modal_content"></div>
     </div>
 
 
@@ -253,6 +251,8 @@
     <audio controls id="vote-sound" preload="none">
         <source src="/sounds/vote.mp3" type="audio/mpeg">
     </audio>
+
+    <script type="module" src="/dist/wallets.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="/js/main.js"></script>

@@ -7,11 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js --ignore data/",
     "start-server": "node app.js",
-    "svgo": "npx svgo --multipass public_html/svgs/clock.svg"
+    "svgo": "npx svgo --multipass public_html/svgs/clock.svg",
+    "tsc-watch": "tsc --watch --project tsconfig.json"
   },
   "author": "@dyablohunter, @terfender",
   "license": "GPL 3.0",
   "devDependencies": {
+    "@types/node": "20.0.0",
     "nodemon": "^3.1.4"
   },
   "nodemonConfig": {

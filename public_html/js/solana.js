@@ -67,10 +67,10 @@ const logout = async () => {
     location.reload()
 }
 
-// Add button listeners
-loginButton.addEventListener("click", e => login(false))
-logoutButton.addEventListener("click", e => logout())
+// // Add button listeners
+// loginButton.addEventListener("click", e => login(false))
+// logoutButton.addEventListener("click", e => logout())
 
-$('#wallets .modal_close').addEventListener("click", e => {
-    wallets.classList.add('hide')
-})
+// $('#wallets .modal_close').addEventListener("click", e => {
+//     wallets.classList.add('hide')
+// })
