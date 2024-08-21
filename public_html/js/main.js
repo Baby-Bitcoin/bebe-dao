@@ -37,7 +37,7 @@ else {
 }
 
 $('#bugs').addEventListener('click', (event) => {
-    alert('Send bugs or feedback at:')
+    alert('Send bugs or feedback at: bugs@babybitcoin.meme')
 })
 
 $('#select-type select').addEventListener('change', (e) => {
