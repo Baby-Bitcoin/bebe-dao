@@ -106,19 +106,19 @@ code:before {
   color: var(--features-b)
 }
 
-.features .grid-6 {
+.features .grid-3 {
   display: grid;
   gap: 0;
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: repeat(1, 1fr);
   grid-template-columns: repeat(3, 1fr);
   line-height: 1.4;
 }
 
-.features .grid-6 div {
+.features .grid-3 div {
   padding: 23px 12px 12px 12px
 }
 
-.features .grid-6 img {
+.features .grid-3 img {
   width: 55px;
   height: 55px;
   display: block;
