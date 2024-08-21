@@ -6,7 +6,11 @@ dotenv.config({
 });
 
 class RedisClient {
-  static instances: any = {};
+  static instances = {};
+
+  static ADDRESSES_DB = 0;
+  static POSTS_DB = 1;
+  static VOTES_DB = 2;
 
   constructor() {}
 
@@ -32,20 +36,20 @@ class RedisClient {
     return RedisClient.instances[dbNumber];
   }
 
-  static async jsonset(dbNumber: number, key: string, path: string, json: any) {
+  static async jsonset(dbNumber, key, json, path = ".") {
     const instance = this.getInstance(dbNumber);
     return instance.jsonset(key, path, json);
   }
 
-  static async jsonget(dbNumber: number, key: string) {
+  static async jsonget(dbNumber, key) {
     const instance = this.getInstance(dbNumber);
     return instance.jsonget(key);
   }
 
-  static async scan(dbNumber: number, pattern = "*", count = 1000) {
+  static async scan(dbNumber, pattern = "*", count = 1000) {
     const instance = this.getInstance(dbNumber);
     let cursor = "0";
-    let keys: any[] = [];
+    let keys = [];
 
     do {
       const result = await instance.scan(
@@ -62,7 +66,7 @@ class RedisClient {
     return keys;
   }
 
-  static async delete(dbNumber: number, key: string) {
+  static async delete(dbNumber, key) {
     const instance = this.getInstance(dbNumber);
     return instance.del(key);
   }

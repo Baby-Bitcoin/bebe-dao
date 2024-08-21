@@ -74,12 +74,34 @@ const connectToWallet = async (walletName: string) => {
   if (connected) {
     closeModal();
     const avatarName = $("#avatar-name");
-    avatarName.innerHTML = wallet.adapter.publicKey.toBase58();
+    const publicKey = wallet.adapter.publicKey.toBase58();
+    avatarName.innerHTML = publicKey;
+    localStorage.setItem("publicKey", publicKey);
+    localStorage.setItem("connectedWallet", walletName);
+    const body: any = JSON.stringify({
+      address: publicKey,
+    });
+
+    const result = await fetch("/address-info", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body,
+    });
   }
 };
 
-let initialized: boolean = false;
+const checkSession = () => {
+  const connectedWalletName = localStorage.getItem("connectedWallet");
+  if (!connectedWalletName) {
+    return;
+  }
+  connectToWallet(connectedWalletName);
+};
 
+let initialized: boolean = false;
 document.onreadystatechange = () => {
   if (document.readyState === "complete" && !initialized) {
     initialized = true;
@@ -94,6 +116,8 @@ document.onreadystatechange = () => {
     $("#modal .modal_close").addEventListener("click", (e: Event) => {
       closeModal();
     });
+
+    checkSession();
   }
 };
 
