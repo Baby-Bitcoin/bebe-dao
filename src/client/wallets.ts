@@ -27,7 +27,7 @@ const getAllAvailableWallets = (): any[] => {
     });
   }
   if (window?.trustWallet?.solana) {
-    wallets.push({ ...trustWallet, forced: true });
+    wallets.push({ ...trustWallet, forced: false });
   }
   if (window?.solflare) {
     wallets.push({
