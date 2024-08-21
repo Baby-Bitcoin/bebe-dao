@@ -11,27 +11,34 @@ declare global {
 
 const getAllAvailableWallets = (): any[] => {
   let wallets: any[] = [];
-  if (window?.phantom?.solana) {
-    wallets.push({
-      name: "Phantom",
-      logo: "/svgs/phantom.svg",
-      style: "background-color: #AB9FF2; color: white",
-      adapter: window.phantom.solana,
-    });
-  }
-  if (window?.trustWallet?.solana) {
-    wallets.push({
-      name: "Trust Wallet",
-      logo: "/svgs/walletconnect.svg",
-      adapter: window.trustWallet.solana,
-    });
-  }
-  if (window?.solflare) {
-    wallets.push({
-      name: "Solflare",
-      logo: "/img/solflare.png",
-      adapter: window.solflare,
-    });
+  const trustWallet = {
+    name: "Trust Wallet",
+    logo: "/svgs/walletconnect.svg",
+    adapter: window.trustWallet.solana,
+    forced: true,
+  };
+
+  // if (window?.phantom?.solana) {
+  //   wallets.push({
+  //     name: "Phantom",
+  //     logo: "/svgs/phantom.svg",
+  //     style: "background-color: #AB9FF2; color: white",
+  //     adapter: window.phantom.solana,
+  //   });
+  // }
+  // if (window?.trustWallet?.solana) {
+  //   wallets.push({ ...trustWallet, forced: true });
+  // }
+  // if (window?.solflare) {
+  //   wallets.push({
+  //     name: "Solflare",
+  //     logo: "/img/solflare.png",
+  //     adapter: window.solflare,
+  //   });
+  // }
+
+  if (wallets.length == 0) {
+    wallets.push(trustWallet);
   }
 
   return wallets;
@@ -123,6 +130,8 @@ document.onreadystatechange = () => {
 
 const buildWalletsUI = () => {
   const wallets = getAllAvailableWallets();
+  const showInstallationGuide =
+    wallets.filter((wallet) => wallet.forced).length > 0;
   let ui = [];
   for (const wallet of wallets) {
     const html = `
@@ -135,7 +144,13 @@ const buildWalletsUI = () => {
     ui.push(html);
   }
 
-  return ui.join("");
+  const walletInstallationGuide = showInstallationGuide
+    ? `
+      <h1 style="color: white">Install wallets extention for your browser</h1>
+    `
+    : "";
+
+  return `${walletInstallationGuide} ${ui.join("")}`;
 };
 
 globalThis.connectToWallet = connectToWallet;
