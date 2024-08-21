@@ -37,65 +37,17 @@ const getAllAvailableWallets = (): any[] => {
   return wallets;
 };
 
-// Login in function that is called when the login button is clicked
-const connectWallet = async () => {
-  const availableWallets = getAllAvailableWallets();
-  console.log("connectWallet2222", availableWallets);
-  return;
-  // const { link: localLink, session: localSession } = await ProtonWebSDK({
-  //   // linkOptions is a required part of logging in with the protonWebSDK(), within
-  //   // the options, you must have the chain API endpoint array, a chainID that matches the chain your API
-  //   // endpoint is on, and restoreSession option that is passed to determine if there is
-  //   // an existing session that needs to be saved or if a new session needs to be created.
-  //   linkOptions: {
-  //     endpoints,
-  //     chainId,
-  //     restoreSession,
-  //   },
-  //   // The account that is requesting the transaction with the client
-  //   transportOptions: {
-  //     requestAccount: appIdentifier,
-  //   },
-  //   // This is the wallet selector style options available
-  //   selectorOptions: {
-  //     appName: "SHIELD",
-  //     appLogo: "/svgs/SHIELD-logo.svg",
-  //     customStyleOptions: {
-  //       modalBackgroundColor: "#F4F7FA",
-  //       logoBackgroundColor: "white",
-  //       isLogoRound: false,
-  //       optionBackgroundColor: "white",
-  //       optionFontColor: "#0274f9",
-  //       primaryFontColor: "#012453",
-  //       secondaryFontColor: "#6B727F",
-  //       linkColor: "#0274f9",
-  //     },
-  //   },
-  // });
+const disconnectWallet = async (walletName: string = "") => {
+  const wallets = getAllAvailableWallets();
 
-  // link = localLink;
-  // session = localSession;
-
-  // if (localSession) {
-  //   user = localSession.auth.actor;
-  //   avatarName.textContent = user;
-  //   $("#add").style.display = "block";
-  //   $("#menu-options").classList.add("authenticated");
-
-  //   if (restoreSession) {
-  //     userInfo(user, false);
-  //   } else {
-  //     userInfo(user, true);
-  //     location.reload();
-  //   }
-  // }
-};
-
-// Logout function sets the link and session back to original state of undefined
-const disconnectWallet = async (walletName: string) => {
-  const wallet = getAllAvailableWallets().filter(
-    (wallet: any) => wallet.name == walletName
-  )[0];
+  // disconnect from all
+  if (walletName == "") {
+    for (const wallet of wallets) {
+      disconnectWallet(wallet.name);
+    }
+    return;
+  }
+  const wallet = wallets.filter((wallet: any) => wallet.name == walletName)[0];
 
   if (!wallet) {
     return;
@@ -136,7 +88,6 @@ document.onreadystatechange = () => {
 
     loginButton.addEventListener("click", () => {
       showModal(buildWalletsUI());
-      connectWallet();
     });
     logoutButton.addEventListener("click", () => disconnectWallet());
 
@@ -165,4 +116,4 @@ const buildWalletsUI = () => {
 
 globalThis.connectToWallet = connectToWallet;
 
-export { connectWallet, disconnectWallet, getAllAvailableWallets };
+export { disconnectWallet, getAllAvailableWallets };
