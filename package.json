@@ -8,7 +8,8 @@
     "start": "nodemon app.js --ignore data/",
     "start-server": "node app.js",
     "svgo": "npx svgo --multipass public_html/svgs/clock.svg",
-    "tsc-watch": "tsc --watch --project tsconfig.json"
+    "tsc-watch": "tsc --watch --project tsconfig.json",
+    "redis-docjer": "docker run -p 6378:6379 --name redis-stack redis/redis-stack:latest"
   },
   "author": "@dyablohunter, @terfender",
   "license": "GPL 3.0",
