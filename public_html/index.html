@@ -75,8 +75,8 @@
         </div>
 
         <div class="mt32">
-          <label for="username">Username:</label>
-          <input type="text" name="username" id="username" maxlength="12" required>
+          <label for="username">Username (max 23 characters):</label>
+          <input type="text" name="username" id="username" pattern="^[a-z0-9_]{4,23}$" required>
         </div>
 
         <div class="form_error"></div>
