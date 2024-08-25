@@ -83,6 +83,7 @@ const connectToWallet = async (walletName: string) => {
     const avatarName = $("#avatar-name");
     $("#logout").classList.remove('hide');
     $("#account").classList.remove('hide');
+    $("#add").style.display = 'block';
     const publicKey = wallet.adapter.publicKey.toBase58();
     avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);

@@ -2,8 +2,8 @@ import { $, $$ } from '/js/selectors.js';
 
 export const addBTN = () => {
     $('#add').addEventListener('click', (event) => {
-        $('.form-container').style.display = 'flex';
-        $('#close').style.display = 'block';
+        $('#post-form-container').style.display = 'flex';
+        $('post-form-container #close').style.display = 'block';
         $('body').style.overflow = 'hidden';
     });
 }
