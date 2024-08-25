@@ -132,7 +132,9 @@
 }
 
 #profile .image-label img {
-    height: 230px;
+    width: 100%;
+    max-width: 230px;
+    height: auto;
     border-radius: 10px;
     margin: 0
 }
