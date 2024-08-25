@@ -1,11 +1,12 @@
 import { $, $$ } from '/js/selectors.js'
+import { checkFileProperties, handleUploadedFile } from '/js/image-select.js'
 
 let link = undefined
 let session = undefined
 export let features = localStorage.getItem('features') || null
 
 export let user
-export const admins = ["lucianape3", "fatzuca", "barbuvlad21", "abubfc"]
+export const admins = ["lucianape3"]
 export let minBalance = 0
 export let membership = true // default should be false
 export let accountStatus
@@ -71,6 +72,24 @@ const logout = async () => {
 // loginButton.addEventListener("click", e => login(false))
 // logoutButton.addEventListener("click", e => logout())
 
-// $('#wallets .modal_close').addEventListener("click", e => {
-//     wallets.classList.add('hide')
-// })
+$('#account').addEventListener("click", e => {
+    $('#profile').style = 'display: block !important';
+})
+
+$('#profile .modal_close').addEventListener("click", e => {
+    $('#profile').style = '';
+})
+
+
+$('#profile-form').addEventListener('change', (event) => {
+    // check file selected
+    let theFile
+    if (event.target.files) {
+        theFile = event.target.files[0]
+        $('#profile-form .form_error').classList.add('error')
+        if (checkFileProperties(theFile, 'profile-form')) {
+            handleUploadedFile(theFile, 'profile-form')
+        }
+    }
+
+})

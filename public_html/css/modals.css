@@ -1,4 +1,5 @@
-.menu_modal {
+.menu_modal,
+.general_modal {
     position: absolute;
     top: 0;
     left: 0;
@@ -9,7 +10,7 @@
     text-align: center;
     z-index: 12;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     align-content: center;
     flex-direction: column;
@@ -37,6 +38,7 @@
 
 .modal_close {
     display: block;
+    margin: 23px auto;
     width: 69px;
     height: 69px;
     background: url(/svgs/close.svg) no-repeat 50% 50%;
@@ -48,4 +50,9 @@
 
 .modal_close:hover {
     transform: scale(1.23)
+}
+
+.general_modal .modal_content {
+    text-align: left;
+    color: var(--white)
 }

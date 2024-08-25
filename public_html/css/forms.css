@@ -1,4 +1,4 @@
-#post-form-container {
+.form-container {
     position: fixed;
     padding: 23px 0;
     width: 100%;
@@ -9,22 +9,24 @@
     display: none;
     justify-content: center;
     align-items: flex-start;
-    align-content: center;
+    align-content: flex-start;
     z-index: 9999999999;
     color: var(--second-contrast)
 }
 
-#post-form {
+.form {
+    width: 555px;
     min-width: 555px;
-    max-width: 100%;
+    margin: 0 auto;
     text-align: left;
     color: var(--white)
 }
 
-#post-form input,
-#post-form button,
-#post-form select,
-#post-form textarea {
+.form input,
+.form button,
+.form select,
+.form textarea,
+#profile-form input {
     display: block;
     width: 100%;
     border: 0;
@@ -33,7 +35,11 @@
     margin-bottom: 23px;
 }
 
-#image {
+#profile {
+    color: var(--white)
+}
+
+.image-label+input {
     background: transparent !important;
     width: 100% !important;
     padding: 6px 0 !important
@@ -46,7 +52,7 @@
     margin-top: 6px
 }
 
-#post-form button[type=submit] {
+.form button[type=submit] {
     width: auto;
     margin: 0 auto;
     padding: 10px 23px;
@@ -57,22 +63,22 @@
     font-size: 23px
 }
 
-#post-form textarea {
+.form textarea {
     min-height: 230px
 }
 
-#post-form input[type=file] {
+.form input[type=file] {
     display: inline-block;
     min-width: auto;
     width: auto
 }
 
-#post-form .featured-image label {
+.form .featured-image label {
     display: inline-block
 }
 
-#post-form label,
-#post-form .label {
+.form label,
+.form .label {
     display: block;
     margin-bottom: 6px;
     font-size: 14px
@@ -83,45 +89,64 @@
     font-size: 16px
 }
 
-#post-form .radios label,
-#post-form .radios .label,
-#post-form .radios input {
+.form .radios label,
+.form .radios .label,
+.form .radios input {
     display: inline-block;
     width: auto;
     min-width: auto;
 }
 
-#post-form .radios input {
+.form .radios input {
     cursor: pointer;
     font-size: 18px
 }
 
-#post-form .radios label {
+.form .radios label {
     padding: 0 12px;
     margin: 6px 0 6px -12px
 }
 
-#post-form .radios label:hover,
-#post-form .radios input:hover+label,
-#post-form .radios input:checked+label {
+.form .radios label:hover,
+.form .radios input:hover+label,
+.form .radios input:checked+label {
     color: var(--main-color)
 }
 
-#post-form .btn {
+.form .btn {
     margin-top: 23px !important
 }
 
-#image-label img {
+.image-label {
+    text-align: center;
+}
+
+.image-label img {
     cursor: pointer;
     margin: 0 10px 0 0;
     height: 55px
+}
+
+#profile-form {
+    text-align: center;
+}
+
+#profile .image-label img {
+    height: 230px;
+    border-radius: 10px;
+    margin: 0
+}
+
+#username {
+    max-width: 230px;
+    margin: 10px auto
 }
 
 #add-remove-inputs {
     display: none
 }
 
-.featured-image #image {
+.image-label+input {
     display: none !important;
 }
 
@@ -143,4 +168,13 @@
 
 #remove_option {
     background: linear-gradient(0deg, rgba(249, 2, 2, 1) 0%, rgba(249, 93, 2, 1) 100%);
+}
+
+
+@media screen and (max-width: 959px) {
+    .form {
+        min-width: auto;
+        width: 100%;
+        padding: 10px
+    }
 }

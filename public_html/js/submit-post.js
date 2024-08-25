@@ -26,7 +26,7 @@ export const submitPost = () => {
             formData.append("title", $("#title").value)
             formData.append("duration", $("#duration").value)
 
-            imageSelected && imageValid ? formData.append("image", $("#image").files[0]) : null;
+            imageSelected && imageValid ? formData.append("image", $(".image-label+input[type=file]").files[0]) : null;
             formData.append("description", $("#description").value)
 
             $$('.voteInput').forEach((option) =>
@@ -53,7 +53,7 @@ export const submitPost = () => {
             }).then(returnedData => {
                 console.log(returnedData)
                 if (returnedData.status === 200) {
-                    $('#post-form-container').style.display = 'none'
+                    $('.form-container').style.display = 'none'
                     $('body').style.overflow = ''
                     $('.shortMessage').innerHTML = '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>'
 
@@ -69,9 +69,9 @@ export const submitPost = () => {
                 message += `Hold ${minBalance} BEBE in the account: OK\n`
             } else { message += `Hold ${minBalance} BEBE in the account: NO\n` }
 
-            if (accountStatus.kyc === true) {
-                message += 'Pass the KYC process: OK'
-            } else { message += 'Pass the KYC process: NO' }
+            // if (accountStatus.kyc === true) {
+            //     message += 'Pass the KYC process: OK'
+            // } else { message += 'Pass the KYC process: NO' }
 
             alert(message)
         }
@@ -107,16 +107,16 @@ export const submitPost = () => {
         let theFile
         if (event.target.files) {
             theFile = event.target.files[0]
-            $('#error').classList.add('error')
-            if (checkFileProperties(theFile)) {
-                handleUploadedFile(theFile)
+            $('#post-form .form_error').classList.add('error')
+            if (checkFileProperties(theFile, 'post-form')) {
+                handleUploadedFile(theFile, 'post-form')
                 imageSelected = true
             }
         }
 
     })
-    $('#image').addEventListener('click', (event) => {
-        $('#error').innerHTML = ''
-        $('#error').classList.remove('error')
+    $('#post-form .image-label+input[type=file]').addEventListener('click', (event) => {
+        $('#post-form .form_error').innerHTML = ''
+        $('#post-form .form_error').classList.remove('error')
     })
 }
