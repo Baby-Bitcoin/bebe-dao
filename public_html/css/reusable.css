@@ -37,3 +37,7 @@
 .hide {
     display: none !important
 }
+
+.lh16 {
+    line-height: 1.6;
+}
