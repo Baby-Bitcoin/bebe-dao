@@ -544,7 +544,7 @@ button {
 #main_header #nav {
   position: absolute;
   margin: 0 auto;
-  top: 14px;
+  top: 21px;
   left: 0;
   right: 0;
   width: 32px;
@@ -1122,12 +1122,11 @@ footer img {
 
 #avatar-name {
   display: inline-block;
-  width: 123px;
+  width: 111px;
   font-family: 'Dosis', Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: 60px;
-  margin: 0 3px 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: right;
