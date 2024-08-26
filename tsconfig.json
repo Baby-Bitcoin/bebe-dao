@@ -1,13 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "strict": false,
-    "target": "ES6",
     "outDir": "public_html/dist",
     // "outFile": "./public_html/dist/build.js",
-    // "module": "ESNext",
     "allowJs": false,
     "sourceMap": true,
+
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "bebe-dao/*": ["src/*"]

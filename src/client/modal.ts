@@ -1,20 +1,22 @@
-import { $ } from "./ui.js";
+const { $ } = require("./ui");
 
 const showModal = (html: string) => {
   injectModal(html);
   const modal = $("#wallets");
-  modal.classList.remove("hide");
+  modal?.classList?.remove("hide");
 };
 
 const injectModal = (html: string) => {
   const modal = $("#wallets > .modal_content");
-  modal.innerHTML = html;
+  if (modal) {
+    modal.innerHTML = html;
+  }
 };
 
 const closeModal = () => {
   injectModal("");
   const modal = $("#wallets");
-  modal.classList.add("hide");
+  modal?.classList?.add("hide");
 };
 
 export { showModal, injectModal, closeModal };

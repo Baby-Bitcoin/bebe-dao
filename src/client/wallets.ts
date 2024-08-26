@@ -1,18 +1,9 @@
-import { $ } from "./ui.js";
-import { closeModal, showModal } from "./modal.js";
-import { browserType } from "./utilities.js";
-
-declare global {
-  interface Window {
-    phantom: any;
-    trustWallet: any;
-    solflare: any;
-    walletConnect: any;
-  }
-}
+const { $2 } = require("./ui");
+const { closeModal, showModal } = require("./modal");
+const { browserType } = require("./utilities");
 
 const getWalletExtensionDownloadUrl = (walletName: string): string | null => {
-  const bank = {
+  const bank: any = {
     Chrome: {
       Phantom:
         "https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa?hl=en",
@@ -28,7 +19,20 @@ const getWalletExtensionDownloadUrl = (walletName: string): string | null => {
     },
   };
 
-  return bank[browserType()]?.[walletName];
+  const browser = browserType();
+  if (!browser) {
+    return null;
+  }
+
+  return bank[browser]?.[walletName];
+};
+
+const connectedWallet = () => {
+  const walletName = localStorage.getItem("connectedWallet");
+  return (
+    getAllAvailableWallets().filter((wallet) => wallet.name == walletName)[0] ||
+    null
+  );
 };
 
 const getAllAvailableWallets = (): any[] => {
@@ -82,15 +86,29 @@ const disconnectWallet = async (walletName: string = "") => {
   const disconnected = await wallet.adapter.disconnect();
   if (disconnected) {
     closeModal();
-    const avatarName = $("#avatar-name");
-    avatarName.innerHTML = "Connect wallet";
-    $("#logout").classList.add("hide");
-    $("#account").classList.add("hide");
-    $("#add").style.display = "";
-    const loginButton = $("#login>span");
-    loginButton.innerHTML = "Connect Wallet";
     localStorage.removeItem("publicKey");
     localStorage.removeItem("connectedWallet");
+
+    const avatarName = $("#avatar-name");
+    if (avatarName?.innerHTML) {
+      avatarName.innerHTML = "Connect wallet";
+    }
+
+    const logout = $("#logout");
+    if (logout) {
+      logout.classList.add("hide");
+    }
+    const account = $("#account");
+    if (account) {
+      account.classList.add("hide");
+    }
+
+    const add = $("#add");
+    if (add?.style?.display) {
+      add.style.display = "";
+    }
+
+    // $("#login>span").innerHTML = "Connect Wallet";
   }
 };
 
@@ -110,21 +128,21 @@ const connectToWallet = async (walletName: string) => {
       );
       return;
     }
-    globalThis.open(wallet.extensionUrl, "_blank").focus();
+    globalThis?.open?.(wallet.extensionUrl, "_blank")?.focus();
     return;
   }
 
   const connected = await wallet.adapter.connect();
   if (connected) {
     closeModal();
-    const avatarName = $("#avatar-name");
-    $("#logout").classList.remove("hide");
-    $("#account").classList.remove("hide");
-    $("#add").style.display = "block";
     const publicKey = wallet.adapter.publicKey.toBase58();
-    avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);
     localStorage.setItem("connectedWallet", walletName);
+    // const avatarName = $("#avatar-name");
+    // $("#logout").classList.remove("hide");
+    // $("#account").classList.remove("hide");
+    // $("#add").style.display = "block";
+    // avatarName.innerHTML = publicKey;
     const body: any = JSON.stringify({
       address: publicKey,
     });
@@ -177,16 +195,20 @@ const buildWalletsUI = () => {
 let initialized: boolean = false;
 document.onreadystatechange = () => {
   if (document.readyState === "complete" && !initialized) {
-    initialized = true;
     const loginButton = $("#login");
     const logoutButton = $("#logout");
+    const closeModalElement = $("#wallets .modal_close");
+    if (!loginButton || !logoutButton || !closeModalElement) {
+      return;
+    }
+    initialized = true;
 
     loginButton.addEventListener("click", () => {
       showModal(buildWalletsUI());
     });
     logoutButton.addEventListener("click", () => disconnectWallet());
 
-    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
+    closeModalElement.addEventListener("click", (e: Event) => {
       closeModal();
     });
 
@@ -194,6 +216,6 @@ document.onreadystatechange = () => {
   }
 };
 
-globalThis.connectToWallet = connectToWallet;
+window.connectToWallet = connectToWallet;
 
-export { disconnectWallet, getAllAvailableWallets };
+module.exports = { disconnectWallet, getAllAvailableWallets };

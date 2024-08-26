@@ -1,5 +1,8 @@
-const $ = (selector: string, parent: HTMLElement = null): HTMLElement => {
-  return (parent ? parent : document).querySelector(selector);
+const $ = (
+  selector: string,
+  parent: HTMLElement | null = null
+): HTMLElement | null => {
+  return (parent ? parent : document).querySelector(selector) || null;
 };
 
-export { $ };
+module.exports = { $ };
