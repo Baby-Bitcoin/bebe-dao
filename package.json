@@ -9,7 +9,8 @@
     "start-server": "node app.js",
     "svgo": "npx svgo --multipass public_html/svgs/clock.svg",
     "tsc-watch": "tsc --watch --project tsconfig.json",
-    "redis-docker": "docker run -p 6378:6379 --name redis-stack redis/redis-stack:latest"
+    "redis-docker": "docker run -p 6378:6379 --name redis-stack redis/redis-stack:latest",
+    "redis-rejson": "docker run -p 6379:6379 --name redis-rejson redislabs/rejson:latest"
   },
   "author": "@dyablohunter, @terfender",
   "license": "GPL 3.0",
