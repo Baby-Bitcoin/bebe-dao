@@ -1,45 +1,64 @@
 import { $ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
+import { browserType } from "./utilities.js";
 
 declare global {
   interface Window {
     phantom: any;
     trustWallet: any;
     solflare: any;
+    walletConnect: any;
   }
 }
 
-const getAllAvailableWallets = (): any[] => {
-  let wallets: any[] = [];
-  const trustWallet = {
-    name: "Trust Wallet",
-    logo: "/svgs/walletconnect.svg",
-    adapter: window?.trustWallet?.solana,
-    forced: true,
+const getWalletExtensionDownloadUrl = (walletName: string): string | null => {
+  const bank = {
+    Chrome: {
+      Phantom:
+        "https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa?hl=en",
+      Solflare:
+        "https://chromewebstore.google.com/detail/solflare-wallet/bhhhlbepdkbapadjdnnojkbgioiodbic?hl=en",
+      "Trust Wallet":
+        "https://chromewebstore.google.com/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph",
+    },
+    Firefox: {
+      Phantom: "https://addons.mozilla.org/en-US/firefox/addon/phantom-app/",
+      Solflare:
+        "https://addons.mozilla.org/en-US/firefox/addon/solflare-wallet/",
+    },
   };
 
-  if (window?.phantom?.solana) {
-    wallets.push({
+  return bank[browserType()]?.[walletName];
+};
+
+const getAllAvailableWallets = (): any[] => {
+  const wallets: any[] = [
+    {
       name: "Phantom",
       logo: "/svgs/phantom.svg",
       style: "background-color: #AB9FF2; color: white",
-      adapter: window.phantom.solana,
-    });
-  }
-  if (window?.trustWallet?.solana) {
-    wallets.push({ ...trustWallet, forced: false });
-  }
-  if (window?.solflare) {
-    wallets.push({
+      adapter: window?.phantom?.solana,
+      extensionUrl: getWalletExtensionDownloadUrl("Phantom"),
+    },
+    {
       name: "Solflare",
       logo: "/img/solflare.png",
-      adapter: window.solflare,
-    });
-  }
-
-  if (wallets.length == 0) {
-    wallets.push(trustWallet);
-  }
+      adapter: window?.solflare,
+      extensionUrl: getWalletExtensionDownloadUrl("Solflare"),
+    },
+    {
+      name: "Trust Wallet",
+      logo: "/svgs/trust.svg",
+      adapter: window?.trustWallet?.solana,
+      extensionUrl: getWalletExtensionDownloadUrl("Trust Wallet"),
+    },
+    {
+      name: "WalletConnect",
+      logo: "/svgs/walletconnect.svg",
+      adapter: window?.walletConnect?.solana,
+      extensionUrl: getWalletExtensionDownloadUrl("WalletConnect"),
+    },
+  ];
 
   return wallets;
 };
@@ -64,7 +83,14 @@ const disconnectWallet = async (walletName: string = "") => {
   if (disconnected) {
     closeModal();
     const avatarName = $("#avatar-name");
-    avatarName.innerHTML = "";
+    avatarName.innerHTML = "Connect wallet";
+    $("#logout").classList.add("hide");
+    $("#account").classList.add("hide");
+    $("#add").style.display = "";
+    const loginButton = $("#login>span");
+    loginButton.innerHTML = "Connect Wallet";
+    localStorage.removeItem("publicKey");
+    localStorage.removeItem("connectedWallet");
   }
 };
 
@@ -77,10 +103,24 @@ const connectToWallet = async (walletName: string) => {
     return;
   }
 
+  if (!wallet.adapter) {
+    if (!wallet.extensionUrl) {
+      showModal(
+        `<h1>There is no ${browserType()} extension for ${walletName}<h1>`
+      );
+      return;
+    }
+    globalThis.open(wallet.extensionUrl, "_blank").focus();
+    return;
+  }
+
   const connected = await wallet.adapter.connect();
   if (connected) {
     closeModal();
     const avatarName = $("#avatar-name");
+    $("#logout").classList.remove("hide");
+    $("#account").classList.remove("hide");
+    $("#add").style.display = "block";
     const publicKey = wallet.adapter.publicKey.toBase58();
     avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);
@@ -108,6 +148,32 @@ const checkSession = () => {
   connectToWallet(connectedWalletName);
 };
 
+const buildWalletsUI = () => {
+  const wallets = getAllAvailableWallets();
+  const showInstallationGuide =
+    wallets.filter((wallet) => wallet.forced).length > 0;
+  let ui = [];
+  for (const wallet of wallets) {
+    const html = `
+      <button
+        onclick="connectToWallet('${wallet.name}')"
+        class="${wallet.adapter ? "available" : "disabled"}"
+        style="${wallet.style ? wallet.style : ""}"><img src="${wallet.logo}" />
+        ${wallet.name}
+      </button>
+    `;
+    ui.push(html);
+  }
+
+  const footer = `
+    <p style="color: white">
+      We encourage using Chrome or Firefox browsers for better wallet support.
+      </br>
+      WalletConnect is not supported at the moment.
+  </p>`;
+  return `${ui.join("")} ${footer}`;
+};
+
 let initialized: boolean = false;
 document.onreadystatechange = () => {
   if (document.readyState === "complete" && !initialized) {
@@ -120,37 +186,12 @@ document.onreadystatechange = () => {
     });
     logoutButton.addEventListener("click", () => disconnectWallet());
 
-    $("#modal .modal_close").addEventListener("click", (e: Event) => {
+    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
       closeModal();
     });
 
     checkSession();
   }
-};
-
-const buildWalletsUI = () => {
-  const wallets = getAllAvailableWallets();
-  const showInstallationGuide =
-    wallets.filter((wallet) => wallet.forced).length > 0;
-  let ui = [];
-  for (const wallet of wallets) {
-    const html = `
-      <button
-        onclick="connectToWallet('${wallet.name}')"
-        style="${wallet.style}"><img src="${wallet.logo}" /> 
-        ${wallet.name}
-      </button>
-    `;
-    ui.push(html);
-  }
-
-  const walletInstallationGuide = showInstallationGuide
-    ? `
-      <h1 style="color: white">Install wallets extention for your browser</h1>
-    `
-    : "";
-
-  return `${walletInstallationGuide} ${ui.join("")}`;
 };
 
 globalThis.connectToWallet = connectToWallet;
