@@ -81,9 +81,9 @@ const connectToWallet = async (walletName: string) => {
   if (connected) {
     closeModal();
     const avatarName = $("#avatar-name");
-    $("#logout").classList.remove('hide');
-    $("#account").classList.remove('hide');
-    $("#add").style.display = 'block';
+    $("#logout").classList.remove("hide");
+    $("#account").classList.remove("hide");
+    $("#add").style.display = "block";
     const publicKey = wallet.adapter.publicKey.toBase58();
     avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);
@@ -111,26 +111,6 @@ const checkSession = () => {
   connectToWallet(connectedWalletName);
 };
 
-let initialized: boolean = false;
-document.onreadystatechange = () => {
-  if (document.readyState === "complete" && !initialized) {
-    initialized = true;
-    const loginButton = $("#login");
-    const logoutButton = $("#logout");
-
-    loginButton.addEventListener("click", () => {
-      showModal(buildWalletsUI());
-    });
-    logoutButton.addEventListener("click", () => disconnectWallet());
-
-    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
-      closeModal();
-    });
-
-    checkSession();
-  }
-};
-
 const buildWalletsUI = () => {
   const wallets = getAllAvailableWallets();
   const showInstallationGuide =
@@ -154,6 +134,26 @@ const buildWalletsUI = () => {
     : "";
 
   return `${walletInstallationGuide} ${ui.join("")}`;
+};
+
+let initialized: boolean = false;
+document.onreadystatechange = () => {
+  if (document.readyState === "complete" && !initialized) {
+    initialized = true;
+    const loginButton = $("#login");
+    const logoutButton = $("#logout");
+
+    loginButton.addEventListener("click", () => {
+      showModal(buildWalletsUI());
+    });
+    logoutButton.addEventListener("click", () => disconnectWallet());
+
+    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
+      closeModal();
+    });
+
+    checkSession();
+  }
 };
 
 globalThis.connectToWallet = connectToWallet;
