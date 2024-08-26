@@ -14,8 +14,9 @@
   "author": "@dyablohunter, @terfender",
   "license": "GPL 3.0",
   "devDependencies": {
-    "@types/node": "22.5.0",
-    "nodemon": "^3.1.4"
+    "@types/node": "20.0.0",
+    "nodemon": "^3.1.4",
+    "user-agent-data-types": "^0.4.2"
   },
   "nodemonConfig": {
     "ignore": [

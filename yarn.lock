@@ -382,12 +382,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.5.0":
-  version: 22.5.0
-  resolution: "@types/node@npm:22.5.0"
-  dependencies:
-    undici-types: ~6.19.2
-  checksum: 3710b6f42416796061cf47cff0a37955f2ca0afc63ab281cc23e46b3ec8dffcabc66b970e4ee34fff5e2082617bed47610b4a1122c7b3880f551d3c673c40f84
+"@types/node@npm:20.0.0":
+  version: 20.0.0
+  resolution: "@types/node@npm:20.0.0"
+  checksum: 7dadc41081eee634fd0b19e46dfb0a74f8296ee562533118f7c2f2b54dcaba7124961d506db425fff74d8e8288610b93939cd06fa723f053c72b1a7e87aa4ddc
   languageName: node
   linkType: hard
 
@@ -556,7 +554,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bebe-dao@workspace:."
   dependencies:
-    "@types/node": 22.5.0
+    "@types/node": 20.0.0
     cors: ^2.8.5
     dotenv: ^16.4.5
     ejs: ^3.1.8
@@ -572,6 +570,7 @@ __metadata:
     sharp: ^0.33.5
     svgo: ^3.0.0
     ts-node: ^10.9.1
+    user-agent-data-types: ^0.4.2
   languageName: unknown
   linkType: soft
 
@@ -3067,13 +3066,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.19.2":
-  version: 6.19.8
-  resolution: "undici-types@npm:6.19.8"
-  checksum: de51f1b447d22571cf155dfe14ff6d12c5bdaec237c765085b439c38ca8518fc360e88c70f99469162bf2e14188a7b0bcb06e1ed2dc031042b984b0bb9544017
-  languageName: node
-  linkType: hard
-
 "unique-filename@npm:^3.0.0":
   version: 3.0.0
   resolution: "unique-filename@npm:3.0.0"
@@ -3096,6 +3088,13 @@ __metadata:
   version: 1.0.0
   resolution: "unpipe@npm:1.0.0"
   checksum: 4fa18d8d8d977c55cb09715385c203197105e10a6d220087ec819f50cb68870f02942244f1017565484237f1f8c5d3cd413631b1ae104d3096f24fdfde1b4aa2
+  languageName: node
+  linkType: hard
+
+"user-agent-data-types@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "user-agent-data-types@npm:0.4.2"
+  checksum: 0c448b820b70eb99f64ce611ddda70ff3a5af4bfe0b02e4fcae72bb8377710593358657413399daf583622c63a50e024b11d8947d1136ddeca01d6b066f963ad
   languageName: node
   linkType: hard
 
