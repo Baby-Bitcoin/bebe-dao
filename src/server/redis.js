@@ -38,12 +38,13 @@ class RedisClient {
 
   static async jsonset(dbNumber, key, json, path = ".") {
     const instance = this.getInstance(dbNumber);
-    return instance.jsonset(key, path, json);
+    return instance.jsonset(key, path, JSON.stringify(json));
   }
 
   static async jsonget(dbNumber, key) {
     const instance = this.getInstance(dbNumber);
-    return instance.jsonget(key);
+    const data = await instance.jsonget(key);
+    return data ? JSON.parse(data) : null;
   }
 
   static async scan(dbNumber, pattern = "*", count = 1000) {
