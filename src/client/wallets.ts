@@ -70,6 +70,8 @@ const disconnectWallet = async (walletName: string = "") => {
     $("#add").style.display = "";
     const loginButton = $("#login>span");
     loginButton.innerHTML = "Connect Wallet";
+    localStorage.removeItem("publicKey");
+    localStorage.removeItem("connectedWallet");
   }
 };
 
