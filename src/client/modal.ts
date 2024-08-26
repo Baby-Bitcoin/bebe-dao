@@ -2,18 +2,18 @@ import { $ } from "./ui.js";
 
 const showModal = (html: string) => {
   injectModal(html);
-  const modal = $("#modal");
+  const modal = $("#wallets");
   modal.classList.remove("hide");
 };
 
 const injectModal = (html: string) => {
-  const modal = $("#modal > .modal_content");
+  const modal = $("#wallets > .modal_content");
   modal.innerHTML = html;
 };
 
 const closeModal = () => {
   injectModal("");
-  const modal = $("#modal");
+  const modal = $("#wallets");
   modal.classList.add("hide");
 };
 

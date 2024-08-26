@@ -58,9 +58,33 @@
       d="M4 10h24a2 2 0 0 0 0-4H4a2 2 0 0 0 0 4zm24 4H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zm0 8H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z" />
   </svg>
 
-  <div id="modal" class="menu_modal hide">
-    <b class="modal_close mb64"></b>
+  <div id="wallets" class="menu_modal hide">
+    <b class="modal_close mv32"></b>
     <div class="modal_content"></div>
+  </div>
+
+  <div id="profile" class="form-container">
+    <b class="modal_close mv32"></b>
+    <div class="modal_content">
+      <h2>Your Profile</h2>
+      <form id="profile-form" class="form pv15">
+        <div class="avatar-image">
+          <label class="image-label" for="avatar-image"><img alt="image camera icon" title="Avatar image"
+              src="/svgs/photo.svg" /></label>
+          <input name="avatar-image" id="avatar-image" type="file" accept="image/*" />
+        </div>
+
+        <div class="mt15">
+          <label for="username" class="lh16">Username<br><small style="color: gray">(Min 4 chars, Max 23 chars,
+              lowercase & _
+              accepted)</small></label>
+          <input type="text" name="username" id="username" pattern="^[a-z0-9_]{4,23}$" required>
+        </div>
+
+        <div class="form_error"></div>
+        <button class="btn" type="submit">Save</button>
+      </form>
+    </div>
   </div>
 
 
@@ -69,14 +93,17 @@
       <a class="logo" href="/"></a>
       <nav id="nav"><button id="add" title="Submit a post"></button></nav>
       <div id="user-menu" class="flex">
-        <b id="avatar-name"></b>
+        <b id="avatar-name">Connect wallet</b>
         <div class="avatar-container"><img class="avatar" title="Authenticate" alt="avatar" src="/svgs/user.svg" />
         </div>
         <div id="menu-options">
           <button id="login" title="Connect Account"><img class="small-icon" alt="Connect wallet - Unlocked"
               src="/svgs/qr.svg" /> <span>Connect wallet</span></button>
-          <button id="logout" title="Disconnect Account"><img class="small-icon" alt="Disconnect wallet - Locked"
-              src="/svgs/locked.svg" /> Disconnect</button>
+          <button id="account" class="hide" title="Account Profile"><img class="small-icon"
+              alt="Account Profile Settings" src="/svgs/user.svg" />
+            <span>Profile</span></button>
+          <button id="logout" class="hide" title="Disconnect Account"><img class="small-icon"
+              alt="Disconnect wallet - Locked" src="/svgs/locked.svg" /> Disconnect</button>
         </div>
       </div>
     </div>
@@ -150,20 +177,20 @@
           soon.</b></p>
     </div>
 
-    <div id="posts" class="grid"></div>
+    <div id="posts" class="grid">Loading posts ...</div>
 
-    <div id="post-form-container">
-      <img id="close" src="/svgs/close.svg" alt="close icon" />
-      <form id="post-form" class="post-form edit-post">
+    <div id="post-form-container" class="form-container">
+      <img id="close-form" src="/svgs/close.svg" alt="close icon" />
+      <form id="post-form" class="form edit-post">
         <label for="title">Title:</label>
         <input type="text" name="title" id="title" maxlength="123" required>
 
         <div class="flex">
           <div class="featured-image">
-            <label id="image-label" for="image"><img style="vertical-align: middle;" alt="image camera icon"
+            <label class="image-label" for="post-image"><img style="vertical-align: middle;" alt="image camera icon"
                 title="Select image" src="/svgs/photo.svg" /><span>Choose
                 image</span></label>
-            <input name="image" id="image" type="file" accept="image/*" />
+            <input name="post-image" id="post-image" type="file" accept="image/*" />
           </div>
           <div class="duration">
             <label for="duration">Voting period (days)</label>
@@ -207,7 +234,7 @@
           <label for="tags-input">Tags (separated by space):</label>
           <input id="tags-input" type="text" placeholder="tag1 tag2 tag3" maxlength="123" required />
         </div>
-        <div id="error"></div>
+        <div class="form_error"></div>
         <button class="btn" type="submit">Submit</button>
       </form>
     </div>
@@ -238,7 +265,6 @@
   </audio>
 
   <script type="module" src="/dist/wallets.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module" src="/js/main.js"></script>
 

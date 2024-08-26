@@ -32,7 +32,6 @@ body p {
 }
 
 #transferFormContainer,
-#close,
 audio,
 .features,
 .easyNav a,
@@ -346,13 +345,13 @@ code:before {
 }
 
 .hamburger,
-#close,
+#close-form,
 #close-features {
   position: fixed;
   width: 32px;
   height: 32px;
   top: 15px;
-  right: 32px;
+  right: 10px;
   transition: 0.3s all ease-in-out;
   cursor: pointer
 }
@@ -363,7 +362,7 @@ code:before {
   right: 10px;
 }
 
-#close:hover,
+#close-form:hover,
 .hamburger:hover,
 #close-features:hover {
   transform: rotate(180deg);
@@ -450,7 +449,8 @@ code:before {
   min-width: 140px;
   display: none;
   position: absolute;
-  top: -4px;
+  z-index: 12;
+  top: 10px;
   right: 43px;
   border-radius: 5px;
   background: var(--menu-options-bg);
@@ -492,17 +492,14 @@ code:before {
 }
 
 #login,
-#logout {
+#logout,
+#account {
   border-radius: 0;
   width: 100%;
   border: 0;
   padding: 10px;
   background: var(--menu-button);
   text-align: left;
-}
-
-#logout {
-  display: none;
 }
 
 #login span {
@@ -682,7 +679,7 @@ footer img {
   max-height: 32px;
 }
 
-#error {
+.form_error {
   font-size: 18px;
   color: var(--red);
   padding: 23px 0;
@@ -777,12 +774,13 @@ footer img {
   justify-content: space-between;
 }
 
-#post-form-container {
+.form-container {
   overflow-y: auto
 }
 
 #posts {
   padding: 0 0 23px 0;
+  text-align: left;
 }
 
 .post-closed {
@@ -1123,12 +1121,16 @@ footer img {
 }
 
 #avatar-name {
+  display: inline-block;
+  width: 123px;
   font-family: 'Dosis', Arial, sans-serif;
   font-size: 16px;
   font-weight: bold;
   line-height: 60px;
   margin: 0 3px 0 0;
-  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
 .time-info {

@@ -64,7 +64,7 @@ const disconnectWallet = async (walletName: string = "") => {
   if (disconnected) {
     closeModal();
     const avatarName = $("#avatar-name");
-    avatarName.innerHTML = "";
+    avatarName.innerHTML = "Connect wallet";
   }
 };
 
@@ -81,6 +81,9 @@ const connectToWallet = async (walletName: string) => {
   if (connected) {
     closeModal();
     const avatarName = $("#avatar-name");
+    $("#logout").classList.remove('hide');
+    $("#account").classList.remove('hide');
+    $("#add").style.display = 'block';
     const publicKey = wallet.adapter.publicKey.toBase58();
     avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);
@@ -120,7 +123,7 @@ document.onreadystatechange = () => {
     });
     logoutButton.addEventListener("click", () => disconnectWallet());
 
-    $("#modal .modal_close").addEventListener("click", (e: Event) => {
+    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
       closeModal();
     });
 

@@ -108,11 +108,11 @@ export const postActions = (queryURL, clearItems, fetchy, looper, populatePosts,
 
                 $('#loader').style.setProperty('display', 'none')
 
-                if (looper === true) {
-                    latestPosts.forEach((post, i) => {
-                        postFunctions(post, i)
-                    })
-                }
+                // if (looper === true) {
+                //     latestPosts.forEach((post, i) => {
+                //         postFunctions(post, i)
+                //     })
+                // }
 
                 let queryText = $('.query-text')
                 let finalQuery
@@ -127,7 +127,7 @@ export const postActions = (queryURL, clearItems, fetchy, looper, populatePosts,
     }
     // clear all items
     if (clearItems === true) {
-        $('#posts').innerHTML = ''
+        $('#posts').innerHTML = 'Loading posts ...'
     }
 
     // remove last post from HTML
