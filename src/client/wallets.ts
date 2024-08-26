@@ -65,6 +65,11 @@ const disconnectWallet = async (walletName: string = "") => {
     closeModal();
     const avatarName = $("#avatar-name");
     avatarName.innerHTML = "Connect wallet";
+    $("#logout").classList.add("hide");
+    $("#account").classList.add("hide");
+    $("#add").style.display = "";
+    const loginButton = $("#login>span");
+    loginButton.innerHTML = "Connect Wallet";
   }
 };
 
