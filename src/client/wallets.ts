@@ -10,36 +10,24 @@ declare global {
 }
 
 const getAllAvailableWallets = (): any[] => {
-  let wallets: any[] = [];
-  const trustWallet = {
-    name: "Trust Wallet",
-    logo: "/svgs/walletconnect.svg",
-    adapter: window?.trustWallet?.solana,
-    forced: true,
-  };
-
-  if (window?.phantom?.solana) {
-    wallets.push({
+  const wallets: any[] = [
+    {
       name: "Phantom",
       logo: "/svgs/phantom.svg",
       style: "background-color: #AB9FF2; color: white",
-      adapter: window.phantom.solana,
-    });
-  }
-  if (window?.trustWallet?.solana) {
-    wallets.push({ ...trustWallet, forced: false });
-  }
-  if (window?.solflare) {
-    wallets.push({
+      adapter: window?.phantom?.solana,
+    },
+    {
       name: "Solflare",
       logo: "/img/solflare.png",
-      adapter: window.solflare,
-    });
-  }
-
-  if (wallets.length == 0) {
-    wallets.push(trustWallet);
-  }
+      adapter: window?.solflare,
+    },
+    {
+      name: "Trust Wallet",
+      logo: "/svgs/walletconnect.svg",
+      adapter: window?.trustWallet?.solana,
+    },
+  ];
 
   return wallets;
 };
@@ -127,7 +115,10 @@ const buildWalletsUI = () => {
     const html = `
       <button
         onclick="connectToWallet('${wallet.name}')"
-        style="${wallet.style}"><img src="${wallet.logo}" /> 
+        class="${wallet.adapter ? "available" : "disabled"}"
+        style="${wallet.style ? wallet.style : ""}"><img src="${
+          wallet.logo
+        }" />
         ${wallet.name}
       </button>
     `;
