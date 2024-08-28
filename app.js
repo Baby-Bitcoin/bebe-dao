@@ -10,9 +10,11 @@ const { addressInfo } = require("./src/server/address");
 global.admins = ["lucianape3"];
 
 // configuration for multer
-let storage = multer.diskStorage({
+const postImagesStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./shield/uploads/");
+    const path = "./public_html/images/posts";
+    fs.mkdirSync(path, { recursive: true });
+    return cb(null, path);
   },
   filename: function (req, file, cb) {
     let extArray = file.mimetype.split("/");
@@ -21,8 +23,22 @@ let storage = multer.diskStorage({
     cb(null, newFileName);
   },
 });
+const uploadPostImage = multer({ storage: postImagesStorage });
 
-const upload = multer({ storage: storage });
+const addressAvatarsStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const path = "./public_html/images/addresses";
+    fs.mkdirSync(path, { recursive: true });
+    return cb(null, path);
+  },
+  filename: function (req, file, cb) {
+    let extArray = file.mimetype.split("/");
+    let extension = extArray[extArray.length - 1];
+    let newFileName = file.fieldname + "-" + Date.now() + "." + extension;
+    cb(null, newFileName);
+  },
+});
+const uploadAddressAvatar = multer({ storage: addressAvatarsStorage });
 
 const app = express();
 
@@ -143,7 +159,7 @@ app.get("/getposts", (req, res) => {
 });
 
 // POST to the posts.json file
-app.post("/post", upload.single("image"), (req, res) => {
+app.post("/post", uploadPostImage.single("image"), (req, res) => {
   // Joi Schema = how the incoming input data is validated
   const schema = {
     user: Joi.string().max(23).required(),
@@ -234,6 +250,28 @@ app.post("/address-info", async (req, res) => {
     res.send(address);
   }
 });
+
+app.post(
+  "/address-info-form",
+  uploadAddressAvatar.single("avatar"),
+  async (req, res) => {
+    const schema = Joi.object({
+      address: Joi.string().max(58).required(),
+      username: Joi.string().min(4).max(25),
+      email: Joi.string().email().allow(null, "").optional(),
+    });
+
+    const { error } = schema.validate(req.body, () => {});
+
+    if (error) {
+      res.status(401).send(error.details[0].message);
+      return;
+    } else {
+      const address = await addressInfo(req.body, req.file?.filename);
+      res.send(address);
+    }
+  }
+);
 
 app.post("/comment", (req, res) => {
   let commentData = {};

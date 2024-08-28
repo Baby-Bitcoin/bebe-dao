@@ -148,6 +148,14 @@ const checkSession = () => {
   connectToWallet(connectedWalletName);
 };
 
+const connectedWallet = () => {
+  const walletName = localStorage.getItem("connectedWallet");
+
+  return getAllAvailableWallets().filter(
+    (wallet) => wallet.name == walletName
+  )[0];
+};
+
 const buildWalletsUI = () => {
   const wallets = getAllAvailableWallets();
   const showInstallationGuide =
@@ -191,6 +199,34 @@ document.onreadystatechange = () => {
     });
 
     checkSession();
+
+    $("#profile").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const image: any = $("#avatar-image");
+      const username: any = $("#username");
+      const email: any = $("#email");
+      const wallet = connectedWallet();
+      if (!image || !username || !email || !wallet) {
+        return;
+      }
+
+      const formData = new FormData();
+      console.log({ image, username }, username.value);
+      formData.append("address", wallet.adapter.publicKey.toBase58());
+      formData.append("username", username.value);
+      formData.append("email", email.value);
+      if (image.files[0]) {
+        formData.append("avatar", image.files[0]);
+      }
+
+      const result = await fetch("/address-info-form", {
+        method: "POST",
+        body: formData,
+      }).then((res) => res.json());
+
+      console.log("submitProfilesubmitProfile", { result });
+    });
   }
 };
 
