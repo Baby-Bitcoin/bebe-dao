@@ -16,6 +16,10 @@
   flex-direction: column;
 }
 
+.menu_modal h1 {
+  color: white;
+}
+
 .menu_modal button {
   display: flex;
   justify-content: flex-start;
