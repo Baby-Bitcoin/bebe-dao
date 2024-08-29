@@ -38,12 +38,12 @@ class RedisClient {
 
   static async jsonset(dbNumber, key, json, path = ".") {
     const instance = this.getInstance(dbNumber);
-    return instance.jsonset(key, path, JSON.stringify(json));
+    return instance.jsonset(String(key), path, JSON.stringify(json));
   }
 
   static async jsonget(dbNumber, key) {
     const instance = this.getInstance(dbNumber);
-    const data = await instance.jsonget(key);
+    const data = await instance.jsonget(String(key));
     return data ? JSON.parse(data) : null;
   }
 
@@ -69,7 +69,24 @@ class RedisClient {
 
   static async delete(dbNumber, key) {
     const instance = this.getInstance(dbNumber);
-    return instance.del(key);
+    return instance.del(String(key));
+  }
+
+  static async getLastKey(dbNumber) {
+    const inst = this.getInstance(dbNumber);
+    const keys = (await inst.keys("*"))
+      .map((key) => parseInt(key))
+      .sort(function (a, b) {
+        return a - b;
+      });
+
+    const id = Number(keys[keys.length - 1]);
+    return isNaN(id) ? 0 : id;
+  }
+
+  // Only works for DBs that uses integers as string as key
+  static async getNewId(dbNumber) {
+    return (await RedisClient.getLastKey(dbNumber)) + 1 || 1;
   }
 }
 

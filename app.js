@@ -8,6 +8,7 @@ const Post = require("./src/server/post"); // class / constructor
 const { Vote } = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
+const RedisClient = require("./src/server/redis");
 
 global.admins = ["lucianape3"];
 
@@ -169,11 +170,10 @@ app.get("/getposts", (req, res) => {
 });
 
 // POST to the posts.json file
-app.post("/post", uploadPostImage.single("image"), (req, res) => {
+app.post("/post", uploadPostImage.single("image"), async (req, res) => {
   // Joi Schema = how the incoming input data is validated
-  console.log("I AM", req.session.publicKey);
 
-  const schema = {
+  const schema = Joi.object({
     title: Joi.string().max(124).required(),
     duration: Joi.number().integer().min(1).max(30).required(),
     description: Joi.string().max(10001).required(), // apparently you need to add 1 extra character because it does not match front-end otherwise
@@ -181,16 +181,29 @@ app.post("/post", uploadPostImage.single("image"), (req, res) => {
     tags: Joi.string().max(124).required(),
     type: Joi.string().max(13).required(),
     votes: Joi.array().max(1025).required(),
-    quorum: Joi.array().max(1).required(),
-  };
+    quorum: Joi.number().min(1).max(100).required(),
+  });
 
-  const { error } = Joi.validate(req.body, schema);
+  const { error } = schema.validate(req.body, () => {});
+
+  if (!req.session.publicKey) {
+    res.status(401).send("Make sure your Solana wallet is connected");
+    return;
+  }
+
+  // TO-DO:
+  // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
 
   if (error) {
     res.status(401).send(error.details[0].message);
     return;
   } else {
-    const post = new Post({ ...req.body, ...req.file });
+    const post = new Post({
+      ...req.body,
+      ...req.file,
+      walletAddress: req.session.publicKey,
+    });
+
     post.save();
 
     res.send({ status: 200, id: 0 });

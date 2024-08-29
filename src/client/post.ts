@@ -16,7 +16,7 @@ const handlePostSubmit = async () => {
     const titleElement: any = $("#title");
     const durationElement: any = $("#duration");
     const descriptionElement: any = $("#description");
-    const imageElement: any = $(".image-label+input[type=file]");
+    const imageElement: any = $("#post-image");
 
     if (
       !titleElement ||
@@ -49,18 +49,20 @@ const handlePostSubmit = async () => {
     formData.append("type", ($('input[name="type"]:checked') as any).value);
     (votes || []).forEach((vote: string) => formData.append("votes[]", vote));
 
-    // Sends post request to /post with all input information
-    const result = await fetch("/post", {
-      method: "POST",
-      body: formData,
-    }).then((response) => response.json());
+    try {
+      const result = await fetch("/post", {
+        method: "POST",
+        body: formData,
+      }).then((response) => response.json());
 
-    console.log(result);
-    if (result.status === 200) {
-      $(".form-container").style.display = "none";
-      $("body").style.overflow = "";
-      $(".shortMessage").innerHTML =
-        '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>';
+      if (result.status === 200) {
+        $(".form-container").style.display = "none";
+        $("body").style.overflow = "";
+        $(".shortMessage").innerHTML =
+          '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>';
+      }
+    } catch (error) {
+      $(".form_error").innerHTML = error.message;
     }
   });
 };

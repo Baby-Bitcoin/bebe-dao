@@ -1,92 +1,95 @@
 const fs = require("fs");
 const { currentUnixTimestamp } = require("./utilities");
-
-function addHoursToUTC(date, H) {
-  const passedDate = new Date(date);
-  passedDate.setUTCHours(passedDate.getUTCHours() + H);
-  return passedDate;
-}
+const RedisClient = require("./redis");
 
 module.exports = class Post {
   constructor(postData) {
-    this.id = 0;
-    this.type = postData.type;
-    this.walletAddress = postData.walletAddress;
-    this.title = postData.title;
-    this.duration = postData.duration;
-    this.imageUrl = `${postData.filename || ""}`;
-    this.description = postData.description;
-    this.options = postData.options;
-    postData.type === "proposal" ? (this.options = ["For", "Against"]) : null;
-    postData.type === "issue"
-      ? (this.options = ["Resolved", "Unresolved"])
-      : null;
-    this.createdAt = currentUnixTimestamp();
-    this.tags = postData.tags;
-    this.votes = postData.votes?.map((vote) => parseInt(vote));
-    this.quorum = postData.quorum;
+    let options = postData.options;
+    switch (postData.type) {
+      case "proposal":
+        options = ["For", "Against"];
+        break;
+      case "issue":
+        options = ["Resolved", "Unresolved"];
+        break;
+      default:
+        break;
+    }
+
+    this.data = {
+      type: postData.type,
+      walletAddress: postData.walletAddress,
+      title: postData.title,
+      imageUrl: `${postData.filename || ""}`,
+      description: postData.description,
+      options: options,
+      createdAt: currentUnixTimestamp(),
+      expiresAt: currentUnixTimestamp() + parseInt(this.duration) * 24 * 3600,
+      tags: postData.tags,
+      votes: postData.votes?.map((vote) => parseInt(vote)),
+      quorum: postData.quorum,
+    };
   }
 
-  save() {
-    // TO-DO:
-    // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
+  async save() {
+    this.data.id = await RedisClient.getNewId(RedisClient.POSTS_DB);
+    await RedisClient.jsonset(RedisClient.POSTS_DB, this.data.id, this.data);
 
-    let newID = 0;
-    // read votes file first
-    fs.readFile("./data/votes.json", (err, fileContent) => {
-      let newVotes = [];
-      if (!err) {
-        newVotes = JSON.parse(fileContent);
-      }
+    // // read votes file first
+    // fs.readFile("./data/votes.json", (err, fileContent) => {
+    //   let newVotes = [];
+    //   if (!err) {
+    //     newVotes = JSON.parse(fileContent);
+    //   }
 
-      let maxId = 0;
-      for (let i = 0; i < newVotes.length; i++) {
-        if (newVotes[i].id > maxId) {
-          maxId = newVotes[i].id;
-        }
-      }
-      newID = maxId + 1;
-      this.id = newID;
+    //   let maxId = 0;
+    //   for (let i = 0; i < newVotes.length; i++) {
+    //     if (newVotes[i].id > maxId) {
+    //       maxId = newVotes[i].id;
+    //     }
+    //   }
+    //   newID = maxId + 1;
+    //   this.id = newID;
 
-      let newPostData = {};
+    //   let newPostData = {};
 
-      newPostData.id = newID;
-      newPostData.user = this.user;
+    //   newPostData.id = newID;
+    //   newPostData.user = this.user;
 
-      const postDuration = parseInt(this.duration) * 24;
+    //   const postDuration = parseInt(this.duration) * 24;
 
-      newPostData.expires = addHoursToUTC(this.date, postDuration);
-      newPostData.votes = this.votes;
-      newPostData.voted = false;
+    //   newPostData.expires = addHoursToUTC(this.date, postDuration);
+    //   newPostData.votes = this.votes;
+    //   newPostData.voted = false;
 
-      newVotes.push(newPostData);
+    //   newVotes.push(newPostData);
 
-      // save votes file first
-      fs.writeFile("./data/votes.json", JSON.stringify(newVotes), (err) => {
-        console.log(err);
-      });
+    //   // save votes file first
+    //   fs.writeFile("./data/votes.json", JSON.stringify(newVotes), (err) => {
+    //     console.log(err);
+    //   });
 
-      // create the comments file
-      fs.writeFile("./data/comments/#" + this.id + ".json", "[]", (err) => {
-        console.log(err);
-      });
+    //   // create the comments file
+    //   fs.writeFile("./data/comments/#" + this.id + ".json", "[]", (err) => {
+    //     console.log(err);
+    //   });
 
-      // save the rest of the important data from user, this will never change
-      fs.readFile(`./data/posts.json`, (err, fileContent) => {
-        let userFile = {};
-        if (!err) {
-          userFile = JSON.parse(fileContent);
-        }
+    //   // save the rest of the important data from user, this will never change
+    //   fs.readFile(`./data/posts.json`, (err, fileContent) => {
+    //     let userFile = {};
+    //     if (!err) {
+    //       userFile = JSON.parse(fileContent);
+    //     }
 
-        let newEntry = this;
-        delete newEntry["votes"];
+    //     let newEntry = this;
+    //     delete newEntry["votes"];
 
-        userFile.push(newEntry);
+    //     userFile.push(newEntry);
 
-        fs.writeFile(`./data/posts.json`, JSON.stringify(userFile), (err) => {
-          console.log(err);
-        });
-      });
-    });
+    //     fs.writeFile(`./data/posts.json`, JSON.stringify(userFile), (err) => {
+    //       console.log(err);
+    //     });
+    //   });
+    // });
   }
 };
