@@ -1,6 +1,6 @@
 import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
-import { browserType, tokenAtomicsToPrettyDecimal } from "./utilities.js";
+import { browserType, prettifyNumber } from "./utilities.js";
 import { getTokenBalance } from "./web3.js";
 import { BEBE_MINT_ADDRESS } from "./config.js";
 
@@ -224,8 +224,9 @@ const refreshTokenBalance = async () => {
   }
 
   const balanceTag = $("#balance>b");
+
   if (balanceTag) {
-    balanceTag.innerHTML = `${tokenAtomicsToPrettyDecimal(balance, 0)} BEBE`;
+    balanceTag.innerHTML = `${prettifyNumber(balance)} BEBE`;
   }
 };
 
