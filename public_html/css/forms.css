@@ -139,7 +139,7 @@
   margin: 0;
 }
 
-#username,
+#usernameInput,
 #email {
   max-width: 230px;
   margin: 10px auto;

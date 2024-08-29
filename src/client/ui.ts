@@ -1,5 +1,17 @@
-const $ = (selector: string, parent: HTMLElement = null): HTMLElement => {
-  return (parent ? parent : document).querySelector(selector);
+// Single element selector
+const $ = (
+  selector: string,
+  parent: HTMLElement | Document = document
+): HTMLElement | null => {
+  return parent.querySelector(selector);
 };
 
-export { $ };
+// Multiple elements selector
+const $$ = (
+  selector: string,
+  parent: HTMLElement | Document = document
+): NodeListOf<HTMLElement> => {
+  return parent.querySelectorAll(selector);
+};
+
+export { $, $$ };

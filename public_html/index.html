@@ -84,7 +84,7 @@
         <form id="profile-form" class="form pv15">
           <div class="avatar-image">
             <label class="image-label" for="avatar-image"
-              ><img
+              ><img class="userAvatar"
                 alt="image camera icon"
                 title="Avatar image"
                 src="/svgs/photo.svg"
@@ -98,15 +98,15 @@
           </div>
 
           <div class="mt15">
-            <label for="username" class="lh16"
+            <label for="usernameInput" class="lh16"
               >Username<br /><small style="color: gray"
                 >(Min 4 chars, Max 25 chars, lowercase & _ accepted)</small
               ></label
             >
             <input
               type="text"
-              name="username"
-              id="username"
+              name="usernameInput"
+              id="usernameInput"
               pattern="^[a-z0-9_]{4,25}$"
               required
             />
@@ -137,10 +137,10 @@
         <a class="logo" href="/"></a>
         <nav id="nav"><button id="add" title="Submit a post"></button></nav>
         <div id="user-menu" class="flex">
-          <b id="avatar-name">Connect wallet</b>
+          <b id="avatar-name" class="userName">Connect wallet</b>
           <div class="avatar-container">
             <img
-              class="avatar"
+              class="avatar userAvatar"
               title="Authenticate"
               alt="avatar"
               src="/svgs/user.svg"

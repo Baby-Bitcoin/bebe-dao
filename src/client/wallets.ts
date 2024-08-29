@@ -1,4 +1,4 @@
-import { $ } from "./ui.js";
+import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
 import { browserType } from "./utilities.js";
 
@@ -136,14 +136,32 @@ const connectToWallet = async (walletName: string) => {
         "Content-Type": "application/json",
       },
       body,
-    }).then((response) => {
-      return response.json();
     })
+      .then((response) => {
+        return response.json();
+      })
       .then((data) => {
         console.log(data);
         localStorage.setItem("username", data.username);
         localStorage.setItem("avatar", data.username);
-      })
+
+        const usernameInput = $("#usernameInput") as HTMLInputElement;
+        usernameInput.value = data.username;
+
+        const avatarElements = $$(
+          ".userAvatar"
+        ) as NodeListOf<HTMLImageElement>;
+
+        avatarElements.forEach((img) => {
+          img.src = `/images/addresses/${data.avatarUrl}`;
+        });
+
+        const userNameElements = $$(".userName") as NodeListOf<HTMLElement>;
+
+        userNameElements.forEach((el) => {
+          el.textContent = data.username;
+        });
+      });
   }
 };
 
@@ -211,7 +229,7 @@ document.onreadystatechange = () => {
       event.preventDefault();
 
       const image: any = $("#avatar-image");
-      const username: any = $("#username");
+      const username: any = $("#usernameInput");
       const email: any = $("#email");
       const wallet = connectedWallet();
       if (!image || !username || !email || !wallet) {
