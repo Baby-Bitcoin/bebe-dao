@@ -142,8 +142,11 @@ const connectToWallet = async (walletName: string) => {
       })
       .then((data) => {
         console.log(data);
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("avatar", data.username);
+
+        // localStorage.setItem("username", data.username);
+        // localStorage.setItem("avatar", data.username);
+
+        // still need to handle local storage to save on requests ^^^^
 
         const usernameInput = $("#usernameInput") as HTMLInputElement;
         usernameInput.value = data.username;
