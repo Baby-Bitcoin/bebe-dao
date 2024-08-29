@@ -143,28 +143,30 @@ const connectToWallet = async (walletName: string) => {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
-
         // localStorage.setItem("username", data.username);
         // localStorage.setItem("avatar", data.username);
 
         // still need to handle local storage to save on requests ^^^^
+        const userText = data.username || data.address;
 
         const usernameInput = $("#usernameInput") as HTMLInputElement;
-        usernameInput.value = data.username;
+        usernameInput.value = data.username || "";
 
         const avatarElements = $$(
           ".userAvatar"
         ) as NodeListOf<HTMLImageElement>;
 
+        const source = data.avatarUrl
+          ? `/images/addresses/${data.avatarUrl}`
+          : "/svgs/user.svg";
         avatarElements.forEach((img) => {
-          img.src = `/images/addresses/${data.avatarUrl}`;
+          img.src = source;
         });
 
         const userNameElements = $$(".userName") as NodeListOf<HTMLElement>;
 
         userNameElements.forEach((el) => {
-          el.textContent = data.username;
+          el.textContent = userText;
         });
       });
   }
