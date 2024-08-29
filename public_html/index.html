@@ -84,7 +84,8 @@
         <form id="profile-form" class="form pv15">
           <div class="avatar-image">
             <label class="image-label" for="avatar-image"
-              ><img class="userAvatar"
+              ><img
+                class="userAvatar"
                 alt="image camera icon"
                 title="Avatar image"
                 src="/svgs/photo.svg"
@@ -234,8 +235,8 @@
     <!-- << Shared HTML: End >> -->
 
     <div id="main">
-      <div class="features">
-        <img id="close-features" src="/svgs/close.svg" alt="close icon" />
+      <div class="welcome-info">
+        <img id="close-welcome-info" src="/svgs/close.svg" alt="close icon" />
         <img
           style="width: 120px"
           title="BEBE"
@@ -395,6 +396,18 @@
               required
             />
           </div>
+          <div class="slider-container">
+            <input
+              type="range"
+              name="quorum"
+              id="quorumSlider"
+              min="0"
+              max="100"
+              value="15"
+              oninput="updateSliderValue()"
+            />
+            <div class="slider-value" id="sliderValue">15%</div>
+          </div>
           <div class="form_error"></div>
           <button class="btn" type="submit">Submit</button>
         </form>
@@ -449,9 +462,19 @@
       <source src="/sounds/vote.mp3" type="audio/mpeg" />
     </audio>
 
+    <script type="module" src="/dist/welcome.js"></script>
+    <script type="module" src="/dist/init.js"></script>
+    <script type="module" src="/dist/post.js"></script>
     <script type="module" src="/dist/wallets.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="/js/main.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script>
+      function updateSliderValue() {
+        const slider = document.getElementById("quorumSlider");
+        const valueDisplay = document.getElementById("sliderValue");
+        valueDisplay.textContent = slider.value + "%";
+      }
+    </script>
   </body>
 </html>

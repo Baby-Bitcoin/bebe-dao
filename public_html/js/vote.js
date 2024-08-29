@@ -6,7 +6,6 @@ import {
   membership,
   accountStatus,
   minBalance,
-  login,
 } from "/js/solana.js";
 import { postActions } from "/js/post-actions.js";
 
@@ -15,7 +14,7 @@ export const voteBTN = () => {
   $$(".vote-btn").forEach((el) => {
     el.addEventListener("click", (e) => {
       if (!user) {
-        login(false);
+        // login(false);
       } else {
         if (membership) {
           let obj = {};

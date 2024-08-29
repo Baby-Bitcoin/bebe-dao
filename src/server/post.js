@@ -1,5 +1,5 @@
 const fs = require("fs");
-const sharp = require("sharp");
+const { currentUnixTimestamp } = require("./utilities");
 
 function addHoursToUTC(date, H) {
   const passedDate = new Date(date);
@@ -11,23 +11,26 @@ module.exports = class Post {
   constructor(postData) {
     this.id = 0;
     this.type = postData.type;
-    this.user = postData.user;
-    //    this.approved = true
+    this.walletAddress = postData.walletAddress;
     this.title = postData.title;
     this.duration = postData.duration;
-    this.image = `${postData.filename || ""}`;
+    this.imageUrl = `${postData.filename || ""}`;
     this.description = postData.description;
     this.options = postData.options;
     postData.type === "proposal" ? (this.options = ["For", "Against"]) : null;
     postData.type === "issue"
       ? (this.options = ["Resolved", "Unresolved"])
       : null;
-    this.date = new Date();
+    this.createdAt = currentUnixTimestamp();
     this.tags = postData.tags;
     this.votes = postData.votes?.map((vote) => parseInt(vote));
+    this.quorum = postData.quorum;
   }
 
   save() {
+    // TO-DO:
+    // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
+
     let newID = 0;
     // read votes file first
     fs.readFile("./data/votes.json", (err, fileContent) => {
@@ -86,42 +89,4 @@ module.exports = class Post {
       });
     });
   }
-};
-
-module.exports.Vote = async function (obj) {
-  fs.readFile("./data/votes.json", (err, fileContent) => {
-    let votesFile;
-    if (!err) {
-      votesFile = JSON.parse(fileContent);
-    }
-
-    votesFile.map((el, i) => {
-      if (el.id === obj.id) {
-        votesFile[i].votes[obj.vote] += 1;
-        let votingUsers = [];
-        if (votesFile[i].voted === false) {
-          votingUsers.push(obj.user);
-          votesFile[i].voted = votingUsers;
-        } else {
-          votesFile[i].voted.push(obj.user);
-        }
-      }
-    });
-
-    fs.writeFile("./data/votes.json", JSON.stringify(votesFile), (err) => {
-      console.log("Voting error: " + err);
-    });
-  });
-
-  fs.readFile(`./data/members.json`, (err, fileContent) => {
-    let membersFile = {};
-    if (!err) {
-      membersFile = JSON.parse(fileContent);
-    }
-    membersFile[obj.user].lastVoted = new Date();
-
-    fs.writeFile(`./data/members.json`, JSON.stringify(membersFile), (err) => {
-      console.log(err);
-    });
-  });
 };

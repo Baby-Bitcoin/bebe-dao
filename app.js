@@ -1,11 +1,13 @@
 const path = require("path");
 const express = require("express");
+const session = require("express-session");
 const multer = require("multer"); // we use this for storing images and other files sent from the user
 const Joi = require("joi"); // this is for data validation sent from front-end
 const fs = require("fs"); // this is for saving or reading files to the server
-const Post = require("./methods/posts"); // class / constructor
-const { Vote } = require("./methods/posts"); // functions ?  variables
+const Post = require("./src/server/post"); // class / constructor
+const { Vote } = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
+const { env } = require("process");
 
 global.admins = ["lucianape3"];
 
@@ -41,6 +43,14 @@ const addressAvatarsStorage = multer.diskStorage({
 const uploadAddressAvatar = multer({ storage: addressAvatarsStorage });
 
 const app = express();
+app.use(
+  session({
+    secret: env.SESSION_KEY, // Replace with a secure key
+    resave: false, // Prevents session from being saved back to the session store if it wasn't modified
+    saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store
+    cookie: { secure: false }, // Set to true if using HTTPS
+  })
+);
 
 // express.json to decifer json data from incoming requests
 app.use(express.json());
@@ -161,8 +171,9 @@ app.get("/getposts", (req, res) => {
 // POST to the posts.json file
 app.post("/post", uploadPostImage.single("image"), (req, res) => {
   // Joi Schema = how the incoming input data is validated
+  console.log("I AM", req.session.publicKey);
+
   const schema = {
-    user: Joi.string().max(23).required(),
     title: Joi.string().max(124).required(),
     duration: Joi.number().integer().min(1).max(30).required(),
     description: Joi.string().max(10001).required(), // apparently you need to add 1 extra character because it does not match front-end otherwise
@@ -170,6 +181,7 @@ app.post("/post", uploadPostImage.single("image"), (req, res) => {
     tags: Joi.string().max(124).required(),
     type: Joi.string().max(13).required(),
     votes: Joi.array().max(1025).required(),
+    quorum: Joi.array().max(1).required(),
   };
 
   const { error } = Joi.validate(req.body, schema);
@@ -247,6 +259,7 @@ app.post("/address-info", async (req, res) => {
     return;
   } else {
     const address = await addressInfo(req.body);
+    req.session.publicKey = address.address;
     res.send(address);
   }
 });

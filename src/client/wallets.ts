@@ -3,6 +3,7 @@ import { closeModal, showModal } from "./modal.js";
 import { browserType, prettifyNumber } from "./utilities.js";
 import { getTokenBalance } from "./web3.js";
 import { BEBE_MINT_ADDRESS } from "./config.js";
+import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
   interface Window {
@@ -130,7 +131,7 @@ const connectToWallet = async (walletName: string) => {
     const body: any = JSON.stringify({
       address: publicKey,
     });
-
+    refreshTokenBalance();
     await fetch("/address-info", {
       method: "POST",
       headers: {
@@ -214,13 +215,21 @@ const buildWalletsUI = () => {
   return `${ui.join("")} ${footer}`;
 };
 
-const refreshTokenBalance = async () => {
-  let balance = 0;
-  if (localStorage.getItem("publicKey")) {
-    balance = await getTokenBalance(
+const bebeTokenBalance = async () => {
+  try {
+    return await getTokenBalance(
       localStorage.getItem("publicKey"),
       BEBE_MINT_ADDRESS
     );
+  } catch (error) {
+    return 0;
+  }
+};
+
+const refreshTokenBalance = async () => {
+  let balance = 0;
+  if (localStorage.getItem("publicKey")) {
+    balance = await bebeTokenBalance();
   }
 
   const balanceTag = $("#balance>b");
@@ -230,56 +239,82 @@ const refreshTokenBalance = async () => {
   }
 };
 
-let initialized: boolean = false;
-document.onreadystatechange = () => {
-  if (document.readyState === "complete" && !initialized) {
-    initialized = true;
-    const loginButton = $("#login");
-    const logoutButton = $("#logout");
+const handleProfileHeader = () => {
+  $("#account").addEventListener("click", (e) => {
+    ($("#profile") as any).style = "display: block !important";
+  });
 
-    loginButton.addEventListener("click", () => {
-      showModal(buildWalletsUI());
-    });
-    logoutButton.addEventListener("click", () => disconnectWallet());
+  $("#profile .modal_close").addEventListener("click", (e) => {
+    ($("#profile") as any).style = "";
+  });
 
-    $("#wallets .modal_close").addEventListener("click", (e: Event) => {
-      closeModal();
-    });
-
-    $("#profile").addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const image: any = $("#avatar-image");
-      const username: any = $("#usernameInput");
-      const email: any = $("#email");
-      const wallet = connectedWallet();
-      if (!image || !username || !email || !wallet) {
-        return;
+  $("#profile-form").addEventListener("change", (event) => {
+    // check file selected
+    let theFile;
+    if ((event.target as any).files) {
+      theFile = (event.target as any).files[0];
+      $("#profile-form .form_error").classList.add("error");
+      if (checkFileProperties(theFile, "profile-form")) {
+        handleUploadedFile(theFile, "profile-form");
       }
-
-      const formData = new FormData();
-      console.log({ image, username }, username.value);
-      formData.append("address", wallet.adapter.publicKey.toBase58());
-      formData.append("username", username.value);
-      formData.append("email", email.value);
-      if (image.files[0]) {
-        formData.append("avatar", image.files[0]);
-      }
-      $("#loader").style.display = "";
-      const result = await fetch("/address-info-form", {
-        method: "POST",
-        body: formData,
-      }).then((res) => res.json());
-      result.address ? ($("#profile").style.display = "") : null;
-      $("#loader").style.display = "none";
-      console.log("submitProfilesubmitProfile", { result });
-    });
-
-    checkSession();
-    refreshTokenBalance();
-  }
+    }
+  });
 };
 
+const startup = () => {
+  checkSession();
+  refreshTokenBalance();
+  handleProfileHeader();
+
+  const loginButton = $("#login");
+  const logoutButton = $("#logout");
+
+  loginButton.addEventListener("click", () => {
+    showModal(buildWalletsUI());
+  });
+  logoutButton.addEventListener("click", () => disconnectWallet());
+
+  $("#wallets .modal_close").addEventListener("click", (e: Event) => {
+    closeModal();
+  });
+
+  $("#profile").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const image: any = $("#avatar-image");
+    const username: any = $("#usernameInput");
+    const email: any = $("#email");
+    const wallet = connectedWallet();
+    if (!image || !username || !email || !wallet) {
+      return;
+    }
+
+    const formData = new FormData();
+    console.log({ image, username }, username.value);
+    formData.append("address", wallet.adapter.publicKey.toBase58());
+    formData.append("username", username.value);
+    formData.append("email", email.value);
+    if (image.files[0]) {
+      formData.append("avatar", image.files[0]);
+    }
+    $("#loader").style.display = "";
+    const result = await fetch("/address-info-form", {
+      method: "POST",
+      body: formData,
+    }).then((res) => res.json());
+    result.address ? ($("#profile").style.display = "") : null;
+    $("#loader").style.display = "none";
+    console.log("submitProfilesubmitProfile", { result });
+  });
+};
+
+startup();
 globalThis.connectToWallet = connectToWallet;
 
-export { disconnectWallet, getAllAvailableWallets };
+export {
+  connectToWallet,
+  disconnectWallet,
+  getAllAvailableWallets,
+  bebeTokenBalance,
+  buildWalletsUI,
+};

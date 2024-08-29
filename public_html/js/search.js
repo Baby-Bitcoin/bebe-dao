@@ -11,6 +11,6 @@ export const search = () => {
         // Boolean arguments are to call or not call functions inside postActions() - names of sub-functions below:
         // queryURL, clearItems, fetchy, looper, populatePosts, charts, voteBTNlisteners, deleteBTNs, removeLastItem
         postActions(queryURL, true, true, true, true, false, false, false, false);
-        $('.features').style.display = 'none'
+        $('.welcome-info').style.display = 'none'
     });
 }
