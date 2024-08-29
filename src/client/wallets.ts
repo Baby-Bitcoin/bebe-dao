@@ -120,7 +120,7 @@ const connectToWallet = async (walletName: string) => {
     const avatarName = $("#avatar-name");
     $("#logout").classList.remove("hide");
     $("#account").classList.remove("hide");
-    $("#add").style.display = "block";
+    $("#add").style.display = "block"; // on submit for Post we need to check min balance
     const publicKey = wallet.adapter.publicKey.toBase58();
     avatarName.innerHTML = publicKey;
     localStorage.setItem("publicKey", publicKey);
@@ -129,14 +129,21 @@ const connectToWallet = async (walletName: string) => {
       address: publicKey,
     });
 
-    const result = await fetch("/address-info", {
+    await fetch("/address-info", {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       body,
-    });
+    }).then((response) => {
+      return response.json();
+    })
+      .then((data) => {
+        console.log(data);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("avatar", data.username);
+      })
   }
 };
 
