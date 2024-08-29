@@ -1,6 +1,8 @@
 import { $ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
-import { browserType } from "./utilities.js";
+import { browserType, tokenAtomicsToPrettyDecimal } from "./utilities.js";
+import { getTokenBalance } from "./web3.js";
+import { BEBE_MINT_ADDRESS } from "./config.js";
 
 declare global {
   interface Window {
@@ -182,6 +184,21 @@ const buildWalletsUI = () => {
   return `${ui.join("")} ${footer}`;
 };
 
+const refreshTokenBalance = async () => {
+  let balance = 0;
+  if (localStorage.getItem("publicKey")) {
+    balance = await getTokenBalance(
+      localStorage.getItem("publicKey"),
+      BEBE_MINT_ADDRESS
+    );
+  }
+
+  const balanceTag = $("#balance>b");
+  if (balanceTag) {
+    balanceTag.innerHTML = `${tokenAtomicsToPrettyDecimal(balance, 0)} BEBE`;
+  }
+};
+
 let initialized: boolean = false;
 document.onreadystatechange = () => {
   if (document.readyState === "complete" && !initialized) {
@@ -197,8 +214,6 @@ document.onreadystatechange = () => {
     $("#wallets .modal_close").addEventListener("click", (e: Event) => {
       closeModal();
     });
-
-    checkSession();
 
     $("#profile").addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -227,6 +242,9 @@ document.onreadystatechange = () => {
 
       console.log("submitProfilesubmitProfile", { result });
     });
+
+    checkSession();
+    refreshTokenBalance();
   }
 };
 
