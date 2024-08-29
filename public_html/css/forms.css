@@ -37,6 +37,7 @@
 
 #profile {
   color: var(--white);
+  z-index: 15;
 }
 
 .image-label + input {

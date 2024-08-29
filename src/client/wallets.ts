@@ -265,12 +265,13 @@ document.onreadystatechange = () => {
       if (image.files[0]) {
         formData.append("avatar", image.files[0]);
       }
-
+      $("#loader").style.display = "";
       const result = await fetch("/address-info-form", {
         method: "POST",
         body: formData,
       }).then((res) => res.json());
-
+      result.address ? ($("#profile").style.display = "") : null;
+      $("#loader").style.display = "none";
       console.log("submitProfilesubmitProfile", { result });
     });
 
