@@ -10,7 +10,7 @@
   justify-content: center;
   align-items: flex-start;
   align-content: flex-start;
-  z-index: 9999999999;
+  z-index: 23;
   color: var(--second-contrast);
 }
 
@@ -53,19 +53,23 @@
   margin-top: 6px;
 }
 
+#types .label b {margin-right: 15px;}
+
 .form button[type="submit"] {
   width: auto;
   margin: 0 auto;
   padding: 10px 23px;
   background-color: var(--main-color);
-  color: var(--main-contrast);
+  color: var(--white);
   text-transform: uppercase;
   letter-spacing: 3px;
   font-size: 23px;
 }
 
 .form textarea {
-  min-height: 230px;
+  min-height: 150px;
+  min-width: 100%;
+  max-width: 100%;
 }
 
 .form input[type="file"] {
@@ -83,6 +87,16 @@
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
+  line-height: 1.4;
+  font-family: 'Dosis', Arial, sans-serif !important;
+}
+
+.form label b, .form .label b {
+  font-family: 'Dosis', Arial, sans-serif !important;
+}
+
+.form label small {
+  color: gray;
 }
 
 #title {
@@ -180,6 +194,17 @@
     rgba(249, 2, 2, 1) 0%,
     rgba(249, 93, 2, 1) 100%
   );
+}
+
+#quorumSlider {
+  margin: 15px 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+#sliderValue {
+  text-align: center;
+  font-size: 150%
 }
 
 @media screen and (max-width: 959px) {

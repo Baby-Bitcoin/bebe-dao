@@ -83,6 +83,7 @@ const disconnectWallet = async (walletName: string = "") => {
   }
 
   const disconnected = await wallet.adapter.disconnect();
+
   if (disconnected) {
     closeModal();
     const avatarName = $("#avatar-name");
@@ -90,8 +91,11 @@ const disconnectWallet = async (walletName: string = "") => {
     $("#logout").classList.add("hide");
     $("#account").classList.add("hide");
     $("#add").style.display = "";
+    const avatarImage = $(".avatar-container img") as HTMLImageElement;
+    avatarImage.src = "/svgs/user.svg";
     const loginButton = $("#login>span");
     loginButton.innerHTML = "Connect Wallet";
+    $("#stats b").innerHTML = "0.00 BEBE";
     localStorage.removeItem("publicKey");
     localStorage.removeItem("connectedWallet");
   }
@@ -148,29 +152,33 @@ const connectToWallet = async (walletName: string) => {
         // localStorage.setItem("avatar", data.username);
 
         // still need to handle local storage to save on requests ^^^^
-        const userText = data.username || data.address;
 
-        const usernameInput = $("#usernameInput") as HTMLInputElement;
-        usernameInput.value = data.username || "";
-
-        const avatarElements = $$(
-          ".userAvatar"
-        ) as NodeListOf<HTMLImageElement>;
-
-        const source = data.avatarUrl
-          ? `/images/addresses/${data.avatarUrl}`
-          : "/svgs/user.svg";
-        avatarElements.forEach((img) => {
-          img.src = source;
-        });
-
-        const userNameElements = $$(".userName") as NodeListOf<HTMLElement>;
-
-        userNameElements.forEach((el) => {
-          el.textContent = userText;
-        });
+        updateAvatarSrcAndUserName(data.username, data.address, data.avatarUrl);
       });
   }
+};
+
+const updateAvatarSrcAndUserName = (
+  userName: string,
+  address: string,
+  avatarSrc: string
+) => {
+  const usernameInput = $("#usernameInput") as HTMLInputElement;
+  usernameInput.value = userName || "";
+  const userNameElements = $$(".userName") as NodeListOf<HTMLElement>;
+
+  userNameElements.forEach((el) => {
+    el.textContent = userName || address;
+  });
+
+  const avatarElements = $$(".userAvatar") as NodeListOf<HTMLImageElement>;
+
+  const source = avatarSrc
+    ? `/images/addresses/${avatarSrc}`
+    : "/svgs/user.svg";
+  avatarElements.forEach((img) => {
+    img.src = source;
+  });
 };
 
 const checkSession = () => {
@@ -304,6 +312,13 @@ const startup = () => {
     }).then((res) => res.json());
     result.address ? ($("#profile").style.display = "") : null;
     $("#loader").style.display = "none";
+
+    updateAvatarSrcAndUserName(
+      result.username || "",
+      result.address,
+      result.avatarUrl
+    );
+
     console.log("submitProfilesubmitProfile", { result });
   });
 };
