@@ -63,7 +63,7 @@
   </head>
 
   <body>
-    <div id="loader"><b>Loading</b></div>
+    <div id="loader"><b>. . . Loading . . .</b></div>
     <div class="shortMessage"></div>
     <style id="root_variables"></style>
     <svg class="hamburger">
@@ -294,7 +294,7 @@
       <div id="post-form-container" class="form-container">
         <img id="close-form" src="/svgs/close.svg" alt="close icon" />
         <form id="post-form" class="form edit-post">
-          <label for="title">Title:</label>
+          <label for="title"><b>TITLE</b></label>
           <input type="text" name="title" id="title" maxlength="123" required />
 
           <div class="flex">
@@ -328,7 +328,7 @@
           </div>
 
           <div id="types" class="radios">
-            <span class="label">Type: </span>
+            <span class="label"><b>TYPE</b></span>
             <input
               name="type"
               id="proposal"
@@ -349,7 +349,7 @@
           </div>
 
           <div id="description-container">
-            <label for="description">Description:</label>
+            <label for="description"><b>DESCRIPTION</b></label>
             <textarea
               id="description"
               type="text"
@@ -360,7 +360,7 @@
 
           <div id="options">
             <div class="options" style="display: none">
-              <span class="label">Options: </span>
+              <span class="label"><b>OPTIONS</b></span>
               <input
                 class="voteInput"
                 type="text"
@@ -387,7 +387,7 @@
           </div>
 
           <div id="tags-container">
-            <label for="tags-input">Tags (separated by space):</label>
+            <label for="tags-input"><b>TAGS</b><br><small>separated by space</small></label>
             <input
               id="tags-input"
               type="text"
@@ -397,13 +397,16 @@
             />
           </div>
           <div class="slider-container">
+            <label for="tags-input"><b>QUORUM</b><br>
+              <small>% from Total Members for the voting results to be Valid</small></label>
             <input
               type="range"
               name="quorum"
               id="quorumSlider"
-              min="0"
+              min="1"
               max="100"
               value="15"
+              step="1"
               oninput="updateSliderValue()"
             />
             <div class="slider-value" id="sliderValue">15%</div>

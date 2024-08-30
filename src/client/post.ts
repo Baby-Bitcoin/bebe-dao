@@ -56,7 +56,7 @@ const handlePostSubmit = async () => {
       }).then((response) => response.json());
 
       if (result.status === 200) {
-        $(".form-container").style.display = "none";
+        $("#post-form-container").style.display = "";
         $("body").style.overflow = "";
         $(".shortMessage").innerHTML =
           '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>';

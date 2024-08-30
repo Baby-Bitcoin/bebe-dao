@@ -21,7 +21,7 @@ export const addressInfo = (user, authenticating) => {
     .then((data) => {
       accountStatus = data;
 
-      if (data.balance >= minBalance && data.kyc === true) {
+      if (data.balance >= minBalance) {
         membership = true;
       }
       if (user) {
