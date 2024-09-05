@@ -1,5 +1,5 @@
 // import { $, $$ } from "/js/selectors.js";
-import { $ } from "./ui.js";
+import { $, $$ } from "./ui.js";
 import { postActions } from "./post.js";
 
 const currentPostsFilters = () => {
@@ -10,6 +10,9 @@ const currentPostsFilters = () => {
   }
   if (urlParams.get("query")) {
     filters.query = urlParams.get("query");
+  }
+  if (urlParams.get("address")) {
+    filters.address = urlParams.get("address");
   }
 
   return filters;
@@ -26,5 +29,7 @@ const startSearch = () => {
     postActions({ ...currentPostsFilters(), query });
   });
 };
+
+globalThis.currentPostsFilters = currentPostsFilters;
 
 export { startSearch, currentPostsFilters };

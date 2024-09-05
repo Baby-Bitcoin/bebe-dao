@@ -1,5 +1,6 @@
 import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
+import { currentPostsFilters } from "./search.js";
 import { $, $$ } from "./ui.js";
 import { formatDate } from "./utilities.js";
 import { features } from "./welcome.js";
@@ -126,6 +127,17 @@ const postFormListener = () => {
   );
 };
 
+const attachListenersToAddresses = () => {
+  $$(".post span[data-address]").forEach((el) => {
+    el.addEventListener("click", function (event) {
+      event.preventDefault();
+      const address = (event.target as any).getAttribute("data-address");
+      console.log(address);
+      postActions({ ...currentPostsFilters(), address });
+    });
+  });
+};
+
 const drawPost = (post: any) => {
   let linkTitle = "";
   if (post && post.title) {
@@ -172,7 +184,10 @@ const drawPost = (post: any) => {
               <h2>${post.title}</h2>
             </div>
             <div class="user_info flex">
-              <span class="index-user ${post.type}">@${post.username}</span>
+              <span
+                data-address=${post.walletAddress}
+                class="index-user ${post.type}">@${post.username}
+              </span>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
               <span class="date" title="Date posted">
                 ${formatDate(post.createdAt * 1000)}
@@ -272,11 +287,13 @@ const postActions = async (filters: any = {}) => {
     drawPost(post);
   });
 
-  if (filters.query || filters.tag) {
+  if (filters.query || filters.tag || filters.address) {
     $(".query-text").innerHTML = `<b>${
-      filters.query || filters.tag
+      filters.query || filters.tag || filters.address
     }</b> - returned ${posts.length} results.`;
   }
+
+  attachListenersToAddresses();
 };
 
 let initialized: boolean = false;

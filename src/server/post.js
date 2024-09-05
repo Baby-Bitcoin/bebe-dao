@@ -99,6 +99,10 @@ module.exports = class Post {
       posts = posts.filter((post) => post.type == filters.type);
     }
 
+    if (filters.address) {
+      posts = posts.filter((post) => post.walletAddress == filters.address);
+    }
+
     if (filters.query) {
       posts = posts.filter((post) =>
         Boolean(this.queryMatchesPost(filters.query, post))
