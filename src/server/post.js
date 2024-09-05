@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { currentUnixTimestamp } = require("./utilities");
 const RedisClient = require("./redis");
 
@@ -91,5 +90,9 @@ module.exports = class Post {
     //     });
     //   });
     // });
+  }
+
+  static async all() {
+    return RedisClient.getAll(RedisClient.POSTS_DB);
   }
 };

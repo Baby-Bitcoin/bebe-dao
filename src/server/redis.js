@@ -72,7 +72,7 @@ class RedisClient {
     return instance.del(String(key));
   }
 
-  static async getLastKey(dbNumber) {
+  static async getAllKeys(dbNumber) {
     const inst = this.getInstance(dbNumber);
     const keys = (await inst.keys("*"))
       .map((key) => parseInt(key))
@@ -80,13 +80,29 @@ class RedisClient {
         return a - b;
       });
 
+    return keys;
+  }
+
+  static async getLastKey(dbNumber) {
+    const keys = await this.getAllKeys(dbNumber);
     const id = Number(keys[keys.length - 1]);
+
     return isNaN(id) ? 0 : id;
   }
 
   // Only works for DBs that uses integers as string as key
   static async getNewId(dbNumber) {
     return (await RedisClient.getLastKey(dbNumber)) + 1 || 1;
+  }
+
+  static async getAll(dbNumber) {
+    const keys = await this.getAllKeys(dbNumber);
+    let promises = [];
+    keys.forEach((key) => {
+      promises.push(RedisClient.jsonget(RedisClient.POSTS_DB, key));
+    });
+
+    return Promise.all(promises);
   }
 }
 

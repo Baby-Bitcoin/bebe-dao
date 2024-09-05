@@ -59,11 +59,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public_html")));
 
 // GETs all data from posts.json file
-app.get("/getposts", (req, res) => {
+app.get("/posts", async (req, res) => {
   let readPosts = {};
   let readVotes = {};
   let members = {};
   //let comments
+
+  const posts = await Post.all();
+  res.send(posts);
 
   // filter posts and votes object based on: if the user requesting is an admin or regular user
   // if (req.query.user) {
@@ -78,6 +81,8 @@ app.get("/getposts", (req, res) => {
   //   readPosts = filteredPosts
   //   readVotes = filteredVotes
   // }
+
+  return;
 
   if (req.query.id) {
     //let posts = readPosts.filter(title => title.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') === req.query.title)

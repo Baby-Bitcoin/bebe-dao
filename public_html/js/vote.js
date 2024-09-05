@@ -7,7 +7,6 @@ import {
   accountStatus,
   minBalance,
 } from "/js/solana.js";
-import { postActions } from "/js/post-actions.js";
 
 export const voteBTN = () => {
   // REFACTOR THIS ENTIRE FUKN THING, I broke it, also check if delete works, including image file
@@ -56,17 +55,13 @@ export const voteBTN = () => {
                     .replace(/[^\w-]+/g, "");
                   // Boolean arguments are to call or not call functions inside postActions() - names of sub-functions below:
                   // queryURL, clearItems, fetchy, looper, populatePosts, charts, voteBTNlisteners, deleteBTNs, removeLastItem
-                  postActions(
-                    queryURL,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
-                    false
-                  );
+                  // postActions(
+                  //   queryURL,
+                  //   true,
+                  //   true,
+                  //   true,
+                  //   false
+                  // );
                   addressInfo();
                 }
               })
