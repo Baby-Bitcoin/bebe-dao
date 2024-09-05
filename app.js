@@ -58,6 +58,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public_html")));
 
+app.get("/posts/:postId", async (req, res) => {
+  const data = await Post.find(req.params.postId);
+
+  res.send(data);
+});
+
 // GETs all data from posts.json file
 app.get("/posts", async (req, res) => {
   let readPosts = {};

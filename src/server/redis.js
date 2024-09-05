@@ -11,6 +11,7 @@ class RedisClient {
   static ADDRESSES_DB = 0;
   static POSTS_DB = 1;
   static VOTES_DB = 2;
+  static COMMENTS_DB = 3;
 
   constructor() {}
 

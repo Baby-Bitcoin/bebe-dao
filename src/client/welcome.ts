@@ -1,4 +1,4 @@
-import { postActions } from "./post.js";
+import { loadSinglePost, postActions } from "./post.js";
 import { currentPostsFilters, startSearch } from "./search.js";
 import { $ } from "./ui.js";
 
@@ -33,23 +33,12 @@ const loadInitPosts = () => {
 };
 
 startSearch();
-loadInitPosts();
 
-// if (urlSearch.get("title") && urlSearch.get("id")) {
-//   queryURL.type = "title";
-//   queryURL.id = urlSearch.get("id");
-//   queryURL.string = urlSearch.get("title");
-//   // generate post page
-//   postActions(queryURL, false);
-// } else if (urlSearch.get("tag") !== null) {
-//   queryURL.type = "tag";
-//   queryURL.string = urlSearch.get("tag");
-//   // generate post page
-//   postActions(queryURL, false);
-// } else {
-//   // generate index page
-//   const filters = { type: localStorage.getItem("filter") || "all" };
-//   postActions("", false, filters);
-// }
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("id")) {
+  loadSinglePost(Number(urlParams.get("id")));
+} else {
+  loadInitPosts();
+}
 
 export { features };

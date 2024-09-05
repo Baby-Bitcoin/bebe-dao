@@ -92,6 +92,25 @@ module.exports = class Post {
     // });
   }
 
+  static async find(postId) {
+    const post = await RedisClient.jsonget(RedisClient.POSTS_DB, postId);
+    if (!post) {
+      return post;
+    }
+
+    const address = await RedisClient.jsonget(
+      RedisClient.ADDRESSES_DB,
+      post.walletAddress
+    );
+
+    const votes =
+      (await RedisClient.jsonget(RedisClient.VOTES_DB, post.id)) || [];
+    const comments =
+      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, post.id)) || [];
+
+    return { post, address, votes, comments };
+  }
+
   static async all(filters = {}) {
     let posts = await RedisClient.getAll(RedisClient.POSTS_DB);
 

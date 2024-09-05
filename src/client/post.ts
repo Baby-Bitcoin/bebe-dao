@@ -1,3 +1,4 @@
+import { ADMINS } from "./config.js";
 import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
@@ -136,6 +137,147 @@ const attachListenersToAddresses = () => {
       postActions({ ...currentPostsFilters(), address });
     });
   });
+};
+
+const drawPostDetails = ({ post }: any) => {
+  let actions = "";
+  const publicKey = localStorage.getItem("publicKey");
+  if (publicKey === post.walletAddress || ADMINS.includes(post.walletAddress)) {
+    actions = `<button id="delete-${post.id}" class="action-button delete" title="Delete this post"></button>`;
+  }
+
+  //!data.approved ? actions += `<button id="approve-${data.id}" class="action-button approve" title="Approve this post"></button>` : null
+
+  let pollHTML = "";
+  const options = post.options;
+
+  let votingDisabled;
+  let checked;
+  let deleteBtnTitle;
+  let disabledColor;
+
+  const counter = new countdown();
+  const closed = counter.count(post.id, post.expiresAt, false);
+
+  let voteBtnText = "VOTE";
+  let closedClass = "";
+
+  if (closed === "Closed") {
+    closedClass = closed;
+    voteBtnText = "CLOSED";
+  } else {
+    closedClass = "";
+  }
+
+  if (post.voted && post.voted.includes(publicKey)) {
+    voteBtnText = "YOU VOTED";
+  }
+
+  if (closed === "Closed" || voteBtnText === "YOU VOTED") {
+    checked = "disabled";
+    disabledColor = 'style="color: gray"';
+    votingDisabled = "disabled";
+    deleteBtnTitle = 'title="You voted already."';
+  } else {
+    checked = "";
+    disabledColor = "";
+    deleteBtnTitle = 'title="Hit the BEBE to cast your vote."';
+  }
+
+  options &&
+    options.forEach((option, i) => {
+      pollHTML += `<li><input id="post-${post.id}-option-${i}" type="radio" name="post-${post.id}-options" value="${i}" ${checked}/> <label for="post-${post.id}-option-${i}" ${disabledColor}>${option}</label></li>`;
+    });
+
+  pollHTML = "<ol>" + pollHTML + "</ol>";
+
+  // tags
+  const tags = post.tags.split(" ");
+  let tagsString = "";
+  tags.forEach((post) => {
+    tagsString += `<a class="tag ${post.type}" href="/?tag=${post}">#${post}</a>`;
+  });
+
+  // check if we have an image
+  let imageSRC;
+  if (post.imageUrl && post.imageUrl != "") {
+    imageSRC = "/images/posts/" + post.imageUrl;
+  } else {
+    imageSRC = "/img/love-technology.jpg";
+  }
+
+  $("body").classList.add("postPage");
+
+  // comments
+  // const postComments = commentTemplate(post) || "";
+  const postComments = "";
+
+  let description = post.description;
+  description = description
+    .replace(/<script[^>]*>/g, "<code>")
+    .replace(/<\/script>/g, "</code>");
+
+  // const totalMembers =
+  //   "<b>" + Object.keys(post.members).length + "</b> total users";
+  const totalMembers = "<b>" + 1 + "</b> total users";
+
+  const htmlStr =
+    `
+        <article class="post ${closedClass}" id="post-${post.id}">
+            <div class="flex">
+                <div class="flex justify-start maxw-1111-230">
+                    <a class="main-image" href="${imageSRC}" target="_blank">
+                        <img class="image" src="${imageSRC}" alt="${post.tags}" />
+                        <div class="main-image-username flex-center">
+                            <span class="postAvatar avatar" title="Avatar"><img src="/avatars/${post.walletAddress}.webp" /></span>
+                            <span class="user" title="Username">${post.walletAddress}</span>
+                        </div>
+                    </a>
+
+                    <div class="content">
+                        <div class="user_info flex">
+                            <span class="${post.type} post-type">${post.type}</span>
+                            <b class="${post.type}">#${post.id}</b>
+                            <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
+                            <span class="date" title="Date posted">` +
+    formatDate(post.createdAt * 1000) +
+    `</span>
+                            <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
+                            <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
+                            <span class="actions">${actions}</span>
+                        </div>
+                        <h1 class="title ${post.type}">${post.title}</h1>
+                        <div class="description">
+                            <p>${description}</p>
+                            <div class="tags">
+                                <b>TAGS:</b>
+                                <span class="${post.type}">
+                                    ${tagsString}
+                                </span>
+                            </div>
+                            <div>
+                                <b>VOTING OPTIONS:</b>
+                                <span>
+                                    ${pollHTML}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="comments-section">
+                            <h2>Comments</h2>
+                            <form id="post-${post.id}-comment" class="submit-comment main-comment-form">
+                                <textarea minlength="2" maxlength="1000" required></textarea>
+                                <input type="submit" value="Comment" />
+                            </form>
+                            <div class="comments">${postComments}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="voting" id="voting"><button data-id="${post.id}" class="vote-btn ${post.type}-bg" ${votingDisabled} ${deleteBtnTitle}></button><span>${voteBtnText}</span><canvas class="myChart"></canvas><br><span id="total-users">${totalMembers}</span><br><br><a class="back" href="javascript:history.back()" title="Back"><img class="small-icon invert" alt="back icon" src="/svgs/back.svg" /></a></div>
+            </div>
+        </article>
+        `;
+
+  $("#posts").innerHTML = htmlStr;
 };
 
 const drawPost = (post: any) => {
@@ -296,6 +438,17 @@ const postActions = async (filters: any = {}) => {
   attachListenersToAddresses();
 };
 
+const loadSinglePost = async (postId: number) => {
+  const data = await fetch(`/posts/${postId}`).then((response) =>
+    response.json()
+  );
+
+  console.log(data);
+  drawPostDetails(data);
+
+  $("#loader").style.setProperty("display", "none");
+};
+
 let initialized: boolean = false;
 document.onreadystatechange = () => {
   if (document.readyState === "complete" && !initialized) {
@@ -305,4 +458,4 @@ document.onreadystatechange = () => {
   }
 };
 
-export { postActions, filter };
+export { postActions, filter, loadSinglePost };
