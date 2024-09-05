@@ -65,7 +65,7 @@ app.get("/posts", async (req, res) => {
   let members = {};
   //let comments
 
-  const posts = await Post.all();
+  const posts = await Post.all(req.query);
   res.send(posts);
 
   // filter posts and votes object based on: if the user requesting is an admin or regular user

@@ -127,10 +127,6 @@ const postFormListener = () => {
 };
 
 const drawPost = (post: any) => {
-  // let approved
-  // !data.approved ? approved = 'unapproved' : approved = ''
-
-  // title
   let linkTitle = "";
   if (post && post.title) {
     linkTitle =
@@ -145,7 +141,7 @@ const drawPost = (post: any) => {
   let voted;
   let closedStatus = "";
   const counter = new countdown();
-  const closed = counter.count(post.id, post.expires, false);
+  const closed = counter.count(post.id, post.expiresAt, false);
   post.voted === false
     ? (voted = false)
     : (voted = post?.voted?.includes(localStorage.getItem("publicKey")));
@@ -160,8 +156,8 @@ const drawPost = (post: any) => {
 
   // check if we have an image
   let imageSRC;
-  if (post.image && post.image != "") {
-    imageSRC = "/uploads/" + post.image;
+  if (post.imageUrl && post.imageUrl != "") {
+    imageSRC = "/images/posts/" + post.imageUrl;
   } else {
     imageSRC = "/img/love-technology.jpg";
   }
@@ -176,12 +172,10 @@ const drawPost = (post: any) => {
               <h2>${post.title}</h2>
             </div>
             <div class="user_info flex">
-              <span class="index-user ${post.type}">@
-                ${post.user}
-              </span>
+              <span class="index-user ${post.type}">@${post.username}</span>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
               <span class="date" title="Date posted">
-                ${formatDate(post.date)}
+                ${formatDate(post.createdAt * 1000)}
               </span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
               <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
@@ -253,83 +247,23 @@ const drawPost = (post: any) => {
 //   counter.count(item.id, latestVotes[index].expires, true);
 // };
 
-const postActions = async (
-  queryURL,
-  charts,
-  voteBTNlisteners,
-  deleteBTNs,
-  removeLastItem
-) => {
-  filter = localStorage.getItem("filter") || "all";
+const postActions = async (filters: any = {}) => {
+  console.log("filters", filters);
 
-  const selectType: any = $("#select-type select");
-
-  if (filter !== null) {
-    selectType.value = filter;
-  } else {
-    selectType.value = "all";
-    localStorage.removeItem("filter");
-  }
-
-  const url = "/";
-  const user = localStorage.getItem("publicKey");
-  let newURL = url + "posts?user=" + user;
-
-  if (typeof queryURL === "object") {
-    queryURL.type === "search"
-      ? (newURL = url + "posts?user=" + user + "&search=" + queryURL.string)
-      : null;
-    queryURL.type === "title"
-      ? (newURL =
-          url +
-          "posts?user=" +
-          user +
-          "&id=" +
-          queryURL.id +
-          "&title=" +
-          queryURL.string)
-      : null;
-    queryURL.type === "tag"
-      ? (newURL = url + "posts?user=" + user + "&tag=" + queryURL.string)
-      : null;
-    $(".easyNav").classList.add("showEasyNav");
-    $("#select-type").style.display = "none";
-  } else {
-    $("#select-type").style.display = "block";
-    features === "hidden"
-      ? ($(".welcome-info").style.display = "none")
-      : ($(".welcome-info").style.display = "block");
-  }
+  $("#select-type").style.display = "block";
+  features === "hidden"
+    ? ($(".welcome-info").style.display = "none")
+    : ($(".welcome-info").style.display = "block");
 
   // clear all items
   $("#posts").innerHTML = "Loading posts ...";
 
-  // remove last post from HTML
-  if (removeLastItem === true) {
-    $("#posts .post:last-of-type").remove();
-  }
+  const params = Object.keys(filters).map((key) => `${key}=${filters[key]}`);
 
-  let filteredData: any = {};
-  let filteredPosts = [];
-  let filteredVotes = [];
-
-  const posts = await fetch(newURL).then((response) => response.json());
-
-  // // let's filter the data by user selecte post type
-  // if (filter !== "all") {
-  //   data.posts.forEach((el, i) => {
-  //     if (el.type === filter) {
-  //       filteredPosts.push(el);
-  //       filteredVotes.push(data.votes[i]);
-  //     }
-  //   });
-  //   filteredData.posts = filteredPosts;
-  //   filteredData.votes = filteredVotes;
-  // } else {
-  //   filteredData = data;
-  // }
-
-  // filteredData.votes ? latestVotes = filteredData.votes.reverse() : null
+  history.pushState({}, null, `/?${params.join("&")}`);
+  const posts = await fetch(`posts?${params.join("&")}`).then((response) =>
+    response.json()
+  );
 
   $("#loader").style.setProperty("display", "none");
 
@@ -338,16 +272,11 @@ const postActions = async (
     drawPost(post);
   });
 
-  let queryText = $(".query-text");
-  let finalQuery = "Posts";
-  if (queryURL.type === "search" || queryURL.type === "tag") {
-    finalQuery = queryURL.string;
-    queryText.innerHTML = `<b>${finalQuery}</b> - returned ${filteredData.posts.length} results.`;
+  if (filters.query || filters.tag) {
+    $(".query-text").innerHTML = `<b>${
+      filters.query || filters.tag
+    }</b> - returned ${posts.length} results.`;
   }
-
-  posts.length == 0
-    ? (queryText.innerHTML = `<b>${finalQuery}</b> - returned no results.`)
-    : null;
 };
 
 let initialized: boolean = false;

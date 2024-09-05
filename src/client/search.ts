@@ -2,18 +2,29 @@
 import { $ } from "./ui.js";
 import { postActions } from "./post.js";
 
-const search = () => {
+const currentPostsFilters = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const filters: any = {};
+  if (urlParams.get("type")) {
+    filters.type = urlParams.get("type");
+  }
+  if (urlParams.get("query")) {
+    filters.query = urlParams.get("query");
+  }
+
+  return filters;
+};
+
+const startSearch = () => {
   $("#search").addEventListener("submit", (event) => {
     event.preventDefault();
-    let queryURL: any = {};
-    queryURL.type = "search";
-    queryURL.string = ($("#search input[type=text]") as any).value;
+
     $("body").classList.remove("postPage");
-    // Boolean arguments are to call or not call functions inside postActions() - names of sub-functions below:
-    // queryURL, clearItems, fetchy, looper, populatePosts, charts, voteBTNlisteners, deleteBTNs, removeLastItem
-    postActions(queryURL, false, false, false, false);
     $(".welcome-info").style.display = "none";
+
+    const query = ($("#search input[type=text]") as any).value;
+    postActions({ ...currentPostsFilters(), query });
   });
 };
 
-export { search };
+export { startSearch, currentPostsFilters };

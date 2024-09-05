@@ -1,4 +1,4 @@
-const { currentUnixTimestamp } = require("./utilities");
+const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const RedisClient = require("./redis");
 
 module.exports = class Post {
@@ -92,7 +92,46 @@ module.exports = class Post {
     // });
   }
 
-  static async all() {
-    return RedisClient.getAll(RedisClient.POSTS_DB);
+  static async all(filters = {}) {
+    let posts = await RedisClient.getAll(RedisClient.POSTS_DB);
+
+    if (filters.type && filters.type != "all") {
+      posts = posts.filter((post) => post.type == filters.type);
+    }
+
+    if (filters.query) {
+      posts = posts.filter((post) =>
+        Boolean(this.queryMatchesPost(filters.query, post))
+      );
+    }
+
+    for (const post of posts) {
+      const address = await RedisClient.jsonget(
+        RedisClient.ADDRESSES_DB,
+        post.walletAddress
+      );
+      post.username = address.username || shorthandAddress(post.walletAddress);
+    }
+
+    return posts.reverse();
+  }
+
+  static queryMatchesPost(query, post) {
+    query = query.toLowerCase();
+
+    if (post.title.toLowerCase().includes(query)) {
+      return post;
+    } else if (post.tags.toLowerCase().includes(query)) {
+      return post;
+    } else if (post.description.toLowerCase().includes(query)) {
+      return post;
+    } else if (
+      post.options.join("").toLowerCase().includes(query) ||
+      post.options.join("").toLowerCase().includes(query.replace(/\s+/, ""))
+    ) {
+      return post;
+    } else {
+      return null;
+    }
   }
 };
