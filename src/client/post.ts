@@ -239,9 +239,7 @@ const drawPostDetails = ({ post }: any) => {
                             <span class="${post.type} post-type">${post.type}</span>
                             <b class="${post.type}">#${post.id}</b>
                             <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
-                            <span class="date" title="Date posted">` +
-    formatDate(post.createdAt * 1000) +
-    `</span>
+                            <span class="date" title="Date posted">${formatDate(post.createdAt * 1000)}</span>
                             <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
                             <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
                             <span class="actions">${actions}</span>
@@ -315,25 +313,18 @@ const drawPost = (post: any) => {
   } else {
     imageSRC = "/img/love-technology.jpg";
   }
-
+  // Index (Home) Template
   const htmlStr = `
     <article class="post ${post.type} ${closedStatus}" id="post-${post.id}">
       <a href="${linkTitle}" class="flex indexPost" title="${post.title}">
         <div class="main-image" style='background: url(${imageSRC}) no-repeat 50% 50%; background-size: cover'></div>
-          <div class="content">
-            <div class="flex-space-vertical flex-space-vertical-middle">
-              <div class="title ${post.type}">
-              <h2>${post.title}</h2>
-            </div>
+        <div class="content">
+          <div class="flex-space-vertical flex-space-vertical-middle">
+            <div class="title ${post.type}"><h2>${post.title}</h2></div>
             <div class="user_info flex">
-              <span
-                data-address=${post.walletAddress}
-                class="index-user ${post.type}">@${post.username}
-              </span>
+              <span class="index-user ${post.type}" data-address="${post.walletAddress}">@${post.username}</span>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
-              <span class="date" title="Date posted">
-                ${formatDate(post.createdAt * 1000)}
-              </span>
+              <span class="date" title="Date posted">${formatDate(post.createdAt * 1000)}</span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
               <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
             </div>
