@@ -3,7 +3,7 @@ import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
 import { $, $$ } from "./ui.js";
-import { formatDate } from "./utilities.js";
+import { formatDate, shorthandAddress } from "./utilities.js";
 import { features } from "./welcome.js";
 
 let filter = null;
@@ -230,7 +230,7 @@ const drawPostDetails = ({ post }: any) => {
                         <img class="image" src="${imageSRC}" alt="${post.tags}" />
                         <div class="main-image-username flex-center">
                             <span class="postAvatar avatar" title="Avatar"><img src="/avatars/${post.walletAddress}.webp" /></span>
-                            <span class="user" title="Username">${post.walletAddress}</span>
+                            <span class="user" title="Username">${shorthandAddress(post.walletAddress, 4)}</span>
                         </div>
                     </a>
 
@@ -294,6 +294,7 @@ const drawPost = (post: any) => {
   let closedStatus = "";
   const counter = new countdown();
   const closed = counter.count(post.id, post.expiresAt, false);
+  console.log(post)
   post.voted === false
     ? (voted = false)
     : (voted = post?.voted?.includes(localStorage.getItem("publicKey")));

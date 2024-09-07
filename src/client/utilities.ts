@@ -53,4 +53,14 @@ const formatDate = (date) => {
   );
 };
 
-export { browserType, prettifyNumber, formatDate };
+const shorthandAddress = (address, length = 4) => {
+  if (!address) {
+    return "";
+  }
+  return `${address.substr(0, length)}...${address.substr(
+    address.length - length,
+    length
+  )}`;
+};
+
+export { browserType, prettifyNumber, formatDate, shorthandAddress };
