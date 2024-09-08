@@ -9,7 +9,6 @@ const Comment = require("./src/server/comment");
 const { Vote } = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
-const RedisClient = require("./src/server/redis");
 
 global.admins = ["lucianape3"];
 
@@ -67,118 +66,8 @@ app.get("/posts/:postId", async (req, res) => {
 
 // GETs all data from posts.json file
 app.get("/posts", async (req, res) => {
-  let readPosts = {};
-  let readVotes = {};
-  let members = {};
-  //let comments
-
   const posts = await Post.all(req.query);
   res.send(posts);
-
-  // filter posts and votes object based on: if the user requesting is an admin or regular user
-  // if (req.query.user) {
-  // } else {
-  //   // if the user is not present or is not an admin
-  //   const filteredPosts = readPosts.filter(post => post.approved)
-  //   const filteredVotes = readVotes.filter(vote => {
-  //     const post = filteredPosts.find(p => p.id === vote.id)
-  //     return post && post.approved
-  //   })
-
-  //   readPosts = filteredPosts
-  //   readVotes = filteredVotes
-  // }
-
-  return;
-
-  if (req.query.id) {
-    //let posts = readPosts.filter(title => title.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') === req.query.title)
-    let posts = readPosts.filter((id) => id.id == req.query.id);
-
-    let votes;
-    let comments = {};
-    if (posts[0]) {
-      if (fs.existsSync(`./data/comments/#${posts[0].id}.json`)) {
-        comments.comments = JSON.parse(
-          fs.readFileSync("./data/comments/#" + posts[0].id + ".json")
-        );
-      } else {
-        comments = null;
-      }
-    }
-    if (posts.length > 0) {
-      votes = readVotes.filter((vote) => vote.id === posts[0].id);
-    } else {
-      posts, votes, (comments = null);
-    }
-    res.send({ posts, votes, comments, members });
-  } else if (req.query.tag) {
-    let posts = readPosts.filter((post) => post.tags.includes(req.query.tag));
-    let votes = [];
-
-    if (posts.length > 0) {
-      posts.forEach((el, i) => {
-        let oneObject = readVotes.filter((vote) => vote.id === el.id);
-        votes.push(oneObject[0]);
-      });
-    } else {
-      posts, (votes = null);
-    }
-    res.send({ posts, votes, members });
-  } else if (req.query.search) {
-    const s = req.query.search;
-    let votes = [];
-    let posts = [];
-
-    const searchStringInJSON = (str, json) => {
-      const string = str.toLowerCase();
-      json.forEach((object) => {
-        for (var key in object) {
-          if (key === "title" && object[key].toLowerCase().includes(string)) {
-            posts.push(object);
-            votes.push(readVotes.filter((vote) => vote.id === object.id)[0]);
-            break;
-          }
-          if (key === "tags" && object[key].toLowerCase().includes(string)) {
-            posts.push(object);
-            votes.push(readVotes.filter((vote) => vote.id === object.id)[0]);
-            break;
-          }
-          if (key === "options") {
-            const stringifiedOptions = JSON.stringify(object.options)
-              .toLowerCase()
-              .replace(/ /g, "")
-              .replace(/[^\w-]+/g, ",");
-            if (stringifiedOptions.includes(string)) {
-              posts.push(object);
-              votes.push(readVotes.filter((vote) => vote.id === object.id)[0]);
-              break;
-            }
-          }
-          if (key === "description") {
-            const stringifiedOptions = JSON.stringify(
-              object.description
-            ).toLowerCase();
-
-            if (stringifiedOptions.includes(string)) {
-              posts.push(object);
-              votes.push(readVotes.filter((vote) => vote.id === object.id)[0]);
-              break;
-            }
-          }
-        }
-      });
-      return posts;
-    };
-
-    posts = searchStringInJSON(s, readPosts);
-
-    res.send({ posts, votes, members });
-  } else {
-    const posts = readPosts;
-    const votes = readVotes;
-    res.send({ posts, votes, members });
-  }
 });
 
 // POST to the posts.json file
