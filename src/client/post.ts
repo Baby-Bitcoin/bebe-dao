@@ -8,7 +8,7 @@ import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
 import { $, $$ } from "./ui.js";
-import { formatDate, shorthandAddress } from "./utilities.js";
+import { formatDate, shorthandAddress, wait } from "./utilities.js";
 import { features } from "./welcome.js";
 
 let filter = null;
@@ -62,16 +62,18 @@ const handlePostSubmit = async () => {
     (votes || []).forEach((vote: string) => formData.append("votes[]", vote));
 
     try {
-      const result = await fetch("/post", {
+      const post = await fetch("/post", {
         method: "POST",
         body: formData,
       }).then((response) => response.json());
 
-      if (result.status === 200) {
+      if (post.id) {
         $("#post-form-container").style.display = "";
         $("body").style.overflow = "";
         $(".shortMessage").innerHTML =
           '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>';
+        await wait();
+        window.location.href = `/?id=${post.id}&title=${post.title}`;
       }
     } catch (error) {
       $(".form_error").innerHTML = error.message;

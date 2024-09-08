@@ -34,6 +34,7 @@ module.exports = class Post {
   async save() {
     this.data.id = await RedisClient.getNewId(RedisClient.POSTS_DB);
     await RedisClient.jsonset(RedisClient.POSTS_DB, this.data.id, this.data);
+    return RedisClient.jsonget(RedisClient.POSTS_DB, this.data.id);
   }
 
   static async find(postId) {

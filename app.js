@@ -106,9 +106,9 @@ app.post("/post", uploadPostImage.single("image"), async (req, res) => {
     walletAddress: req.session.publicKey,
   });
 
-  post.save();
+  const createdPost = await post.save();
 
-  res.send({ status: 200, id: 0 });
+  res.send(createdPost);
 });
 
 app.post("/vote", (req, res) => {

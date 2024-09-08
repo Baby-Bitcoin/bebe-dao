@@ -63,4 +63,8 @@ const shorthandAddress = (address, length = 4) => {
   )}`;
 };
 
-export { browserType, prettifyNumber, formatDate, shorthandAddress };
+const wait = (seconds = 1) => {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+};
+
+export { browserType, prettifyNumber, formatDate, shorthandAddress, wait };
