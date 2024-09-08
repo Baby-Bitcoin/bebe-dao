@@ -128,6 +128,15 @@ const postFormListener = () => {
   );
 };
 
+const getPostImage = (post: any) => {
+  let imageSRC = "/img/love-technology.jpg";
+  if (post.imageUrl && post.imageUrl != "") {
+    imageSRC = "/images/posts/" + post.imageUrl;
+  }
+
+  return imageSRC;
+};
+
 const attachListenersToAddresses = () => {
   $$(".post span[data-address]").forEach((el) => {
     el.addEventListener("click", function (event) {
@@ -198,13 +207,7 @@ const drawPostDetails = ({ post }: any) => {
     tagsString += `<a class="tag ${post.type}" href="/?tag=${post}">#${post}</a>`;
   });
 
-  // check if we have an image
-  let imageSRC;
-  if (post.imageUrl && post.imageUrl != "") {
-    imageSRC = "/images/posts/" + post.imageUrl;
-  } else {
-    imageSRC = "/img/love-technology.jpg";
-  }
+  const imageSRC = getPostImage(post);
 
   $("body").classList.add("postPage");
 
@@ -221,59 +224,81 @@ const drawPostDetails = ({ post }: any) => {
   //   "<b>" + Object.keys(post.members).length + "</b> total users";
   const totalMembers = "<b>" + 1 + "</b> total users";
 
-  const htmlStr =
-    `
-        <article class="post ${closedClass}" id="post-${post.id}">
-            <div class="flex">
-                <div class="flex justify-start maxw-1111-230">
-                    <a class="main-image" href="${imageSRC}" target="_blank">
-                        <img class="image" src="${imageSRC}" alt="${post.tags}" />
-                        <div class="main-image-username flex-center">
-                            <span class="postAvatar avatar" title="Avatar"><img src="/avatars/${post.walletAddress}.webp" /></span>
-                            <span class="user" title="Username">${shorthandAddress(post.walletAddress, 4)}</span>
-                        </div>
-                    </a>
-
-                    <div class="content">
-                        <div class="user_info flex">
-                            <span class="${post.type} post-type">${post.type}</span>
-                            <b class="${post.type}">#${post.id}</b>
-                            <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
-                            <span class="date" title="Date posted">${formatDate(post.createdAt * 1000)}</span>
-                            <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
-                            <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
-                            <span class="actions">${actions}</span>
-                        </div>
-                        <h1 class="title ${post.type}">${post.title}</h1>
-                        <div class="description">
-                            <p>${description}</p>
-                            <div class="tags">
-                                <b>TAGS:</b>
-                                <span class="${post.type}">
-                                    ${tagsString}
-                                </span>
-                            </div>
-                            <div>
-                                <b>VOTING OPTIONS:</b>
-                                <span>
-                                    ${pollHTML}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="comments-section">
-                            <h2>Comments</h2>
-                            <form id="post-${post.id}-comment" class="submit-comment main-comment-form">
-                                <textarea minlength="2" maxlength="1000" required></textarea>
-                                <input type="submit" value="Comment" />
-                            </form>
-                            <div class="comments">${postComments}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="voting" id="voting"><button data-id="${post.id}" class="vote-btn ${post.type}-bg" ${votingDisabled} ${deleteBtnTitle}></button><span>${voteBtnText}</span><canvas class="myChart"></canvas><br><span id="total-users">${totalMembers}</span><br><br><a class="back" href="javascript:history.back()" title="Back"><img class="small-icon invert" alt="back icon" src="/svgs/back.svg" /></a></div>
+  const htmlStr = `
+    <article class="post ${closedClass}" id="post-${post.id}">
+      <div class="flex">
+        <div class="flex justify-start maxw-1111-230">
+          <a class="main-image" href="${imageSRC}" target="_blank">
+            <img
+              class="image"
+              src="${imageSRC}"
+              alt="${post.tags}" />
+            <div class="main-image-username flex-center">
+              <span class="postAvatar avatar" title="Avatar">
+                <img src="/avatars/${post.walletAddress}.webp" />
+              </span>
+              <span class="user" title="Username">
+                ${shorthandAddress(post.walletAddress, 4)}
+              </span>
             </div>
-        </article>
-        `;
+          </a>
+
+          <div class="content">
+            <div class="user_info flex">
+              <span class="${post.type} post-type">${post.type}</span>
+              <b class="${post.type}">#${post.id}</b>
+              <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
+              <span class="date" title="Date posted">
+                ${formatDate(post.createdAt * 1000)}
+              </span>
+              <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
+              <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
+              <span class="actions">${actions}</span>
+            </div>
+            <h1 class="title ${post.type}">${post.title}</h1>
+            <div class="description">
+              <p>${description}</p>
+              <div class="tags">
+                <b>TAGS:</b>
+                <span class="${post.type}">${tagsString}</span>
+              </div>
+              <div>
+                <b>VOTING OPTIONS:</b>
+                <span>${pollHTML}</span>
+              </div>
+            </div>
+            <div class="comments-section">
+              <h2>Comments</h2>
+              <form
+                id="post-${post.id}-comment"
+                class="submit-comment main-comment-form">
+                <textarea minlength="2" maxlength="1000" required></textarea>
+                <input type="submit" value="Comment" />
+              </form>
+              <div class="comments">${postComments}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="voting" id="voting">
+          <button
+            data-id="${post.id}"
+            class="vote-btn ${post.type}-bg"
+            ${votingDisabled}
+            ${deleteBtnTitle}>
+          </button>
+          <span>${voteBtnText}</span>
+          <canvas class="myChart"></canvas>
+          <br>
+          <span id="total-users">${totalMembers}</span>
+          <br><br>
+          <a class="back" href="javascript:history.back()" title="Back">
+            <img class="small-icon invert" alt="back icon" src="/svgs/back.svg" />
+          </a>
+        </div>
+      </div>
+    </article>
+    `;
 
   $("#posts").innerHTML = htmlStr;
 };
@@ -294,7 +319,7 @@ const drawPost = (post: any) => {
   let closedStatus = "";
   const counter = new countdown();
   const closed = counter.count(post.id, post.expiresAt, false);
-  console.log(post)
+
   post.voted === false
     ? (voted = false)
     : (voted = post?.voted?.includes(localStorage.getItem("publicKey")));
@@ -307,14 +332,8 @@ const drawPost = (post: any) => {
     closedStatus = "";
   }
 
-  // check if we have an image
-  let imageSRC;
-  if (post.imageUrl && post.imageUrl != "") {
-    imageSRC = "/images/posts/" + post.imageUrl;
-  } else {
-    imageSRC = "/img/love-technology.jpg";
-  }
-  // Index (Home) Template
+  const imageSRC = getPostImage(post);
+
   const htmlStr = `
     <article class="post ${post.type} ${closedStatus}" id="post-${post.id}">
       <a href="${linkTitle}" class="flex indexPost" title="${post.title}">
@@ -323,9 +342,13 @@ const drawPost = (post: any) => {
           <div class="flex-space-vertical flex-space-vertical-middle">
             <div class="title ${post.type}"><h2>${post.title}</h2></div>
             <div class="user_info flex">
-              <span class="index-user ${post.type}" data-address="${post.walletAddress}">@${post.username}</span>
+              <span class="index-user ${post.type}" data-address="${
+                post.walletAddress
+              }">@${post.username}</span>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
-              <span class="date" title="Date posted">${formatDate(post.createdAt * 1000)}</span>
+              <span class="date" title="Date posted">${formatDate(
+                post.createdAt * 1000
+              )}</span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
               <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
             </div>
@@ -397,8 +420,6 @@ const drawPost = (post: any) => {
 // };
 
 const postActions = async (filters: any = {}) => {
-  console.log("filters", filters);
-
   $("#select-type").style.display = "block";
   features === "hidden"
     ? ($(".welcome-info").style.display = "none")
@@ -409,7 +430,12 @@ const postActions = async (filters: any = {}) => {
 
   const params = Object.keys(filters).map((key) => `${key}=${filters[key]}`);
 
-  history.pushState({}, null, `/?${params.join("&")}`);
+  if (filters.type == "all" && Object.keys(filters).length == 1) {
+    history.pushState({}, null, "/");
+  } else {
+    history.pushState({}, null, `/?${params.join("&")}`);
+  }
+
   const posts = await fetch(`posts?${params.join("&")}`).then((response) =>
     response.json()
   );

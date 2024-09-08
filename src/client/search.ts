@@ -1,5 +1,5 @@
 // import { $, $$ } from "/js/selectors.js";
-import { $, $$ } from "./ui.js";
+import { $ } from "./ui.js";
 import { postActions } from "./post.js";
 
 const currentPostsFilters = () => {
