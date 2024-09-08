@@ -2,6 +2,7 @@ import { $, $$ } from "./ui.js";
 import { countdown } from "./countdown.js";
 import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
+import { getAddressAvatar } from "./address.js";
 
 let closed;
 
@@ -43,16 +44,14 @@ const drawPostComments = (post: any, comments: any[]) => {
     commentTemplate += `
       <comment id="comment-${comment.id}">
         <header class="flex-center">
-          <avatar><img src="/avatars/${comment.user}.webp"></avatar>
-          <h3>${comment.user}</h3>
+          <avatar><img src="${getAddressAvatar(comment)}"></avatar>
+          <h3>${comment.username}</h3>
         </header>
-        <p>${comment.text}</p>
+        <p>${comment.content}</p>
         ${replies}
       </comment>
     `;
   });
-
-  console.log("post.comments", post);
 
   const html = `
     <div class="comments">${commentTemplate}</div>

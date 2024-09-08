@@ -450,7 +450,6 @@ const loadSinglePost = async (postId: number) => {
     response.json()
   );
 
-  console.log(data);
   drawPostDetails(data);
 
   $("#loader").style.setProperty("display", "none");

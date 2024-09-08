@@ -27,4 +27,22 @@ module.exports = class Comment {
       postComments
     );
   }
+
+  static async findByPostId(postId) {
+    const comments =
+      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, postId)) || [];
+
+    for (const comment of comments) {
+      const address = await RedisClient.jsonget(
+        RedisClient.ADDRESSES_DB,
+        comment.walletAddress
+      );
+
+      comment.username =
+        address.username || shorthandAddress(comment.walletAddress);
+      comment.avatarUrl = address.avatarUrl;
+    }
+
+    return comments.reverse();
+  }
 };

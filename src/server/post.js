@@ -1,5 +1,6 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const RedisClient = require("./redis");
+const Comment = require("./comment");
 
 module.exports = class Post {
   constructor(postData) {
@@ -48,8 +49,7 @@ module.exports = class Post {
 
     const votes =
       (await RedisClient.jsonget(RedisClient.VOTES_DB, post.id)) || [];
-    const comments =
-      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, post.id)) || [];
+    const comments = await Comment.findByPostId(post.id);
 
     return { post, address, votes, comments };
   }
