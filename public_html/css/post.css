@@ -17,7 +17,9 @@
 .postPage .title,
 .postPage .title:visited {
     margin-top: 10px;
-    font-size: 23px
+    font-size: 23px;
+    line-height: 1.4;
+    overflow: visible
 }
 
 .postPage .post h2 {
