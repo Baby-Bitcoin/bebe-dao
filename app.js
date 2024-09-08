@@ -4,7 +4,8 @@ const session = require("express-session");
 const multer = require("multer"); // we use this for storing images and other files sent from the user
 const Joi = require("joi"); // this is for data validation sent from front-end
 const fs = require("fs"); // this is for saving or reading files to the server
-const Post = require("./src/server/post"); // class / constructor
+const Post = require("./src/server/post");
+const Comment = require("./src/server/comment");
 const { Vote } = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
@@ -310,21 +311,40 @@ app.post(
   }
 );
 
-app.post("/comment", (req, res) => {
+app.post("/comments", (req, res) => {
+  const schema = Joi.object({
+    postId: Joi.number().integer().max(23000).precision(0).required(),
+    type: Joi.string().max(10).required(),
+    content: Joi.string().min(2).max(1001).required(),
+  });
+
+  const { error } = schema.validate(req.body, () => {});
+
+  if (!req.session.publicKey) {
+    res.status(401).send("Make sure your Solana wallet is connected");
+    return;
+  }
+
+  if (error) {
+    res.status(401).send(error.details[0].message);
+    return;
+  }
+
+  const comment = new Comment({
+    ...req.body,
+    walletAddress: req.session.publicKey,
+  });
+
+  comment.save();
+
+  res.send(comment);
+
+  return;
+
   let commentData = {};
   commentData.id = req.body.commentid;
   commentData.user = req.body.user;
   commentData.text = req.body.comment;
-  //Joi Schema = how the incoming input data is validated
-  const schema = {
-    user: Joi.string().max(23).required(),
-    postid: Joi.number().integer().max(23000).precision(0).required(),
-    commentid: Joi.number().max(23000).precision(0).required(),
-    type: Joi.string().max(10).required(),
-    comment: Joi.string().min(2).max(1001).required(),
-  };
-
-  const { error } = Joi.validate(req.body, schema);
 
   let commentsFile = [];
 

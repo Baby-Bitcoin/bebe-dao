@@ -1,3 +1,4 @@
+import { drawPostCommentsSection, startComment } from "./comments.js";
 import { ADMINS } from "./config.js";
 import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
@@ -148,7 +149,7 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post }: any) => {
+const drawPostDetails = ({ post, comments }: any) => {
   let actions = "";
   const publicKey = localStorage.getItem("publicKey");
   if (publicKey === post.walletAddress || ADMINS.includes(post.walletAddress)) {
@@ -211,10 +212,6 @@ const drawPostDetails = ({ post }: any) => {
 
   $("body").classList.add("postPage");
 
-  // comments
-  // const postComments = commentTemplate(post) || "";
-  const postComments = "";
-
   let description = post.description;
   description = description
     .replace(/<script[^>]*>/g, "<code>")
@@ -267,16 +264,7 @@ const drawPostDetails = ({ post }: any) => {
                 <span>${pollHTML}</span>
               </div>
             </div>
-            <div class="comments-section">
-              <h2>Comments</h2>
-              <form
-                id="post-${post.id}-comment"
-                class="submit-comment main-comment-form">
-                <textarea minlength="2" maxlength="1000" required></textarea>
-                <input type="submit" value="Comment" />
-              </form>
-              <div class="comments">${postComments}</div>
-            </div>
+            ${drawPostCommentsSection(post, comments)}
           </div>
         </div>
 
@@ -301,6 +289,7 @@ const drawPostDetails = ({ post }: any) => {
     `;
 
   $("#posts").innerHTML = htmlStr;
+  startComment(post);
 };
 
 const drawPost = (post: any) => {
