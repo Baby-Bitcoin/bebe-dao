@@ -4,11 +4,16 @@ import {
   startComment,
 } from "./comments.js";
 import { ADMINS } from "./config.js";
-import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
 import { $, $$ } from "./ui.js";
-import { formatDate, shorthandAddress, wait } from "./utilities.js";
+import {
+  countdown,
+  currentUnixTimestamp,
+  formatDate,
+  shorthandAddress,
+  wait,
+} from "./utilities.js";
 import { features } from "./welcome.js";
 
 let filter = null;
@@ -79,6 +84,25 @@ const handlePostSubmit = async () => {
       $(".form_error").innerHTML = error.message;
     }
   });
+};
+
+const isPostClosed = (post: any) => {
+  return post.expiresAt - currentUnixTimestamp() < 0;
+};
+
+const postCountdown = (post: any) => {
+  console.log("post", post);
+  const divId = `post-${post.id}-countdown`;
+
+  const html = `
+    <span
+    id="${divId}"
+    class="countdown" title="Time left (Days : Hours : Minutes)">
+      ${countdown(post.expiresAt - currentUnixTimestamp(), `#${divId}`)}
+    </span>
+  `;
+
+  return html;
 };
 
 const postFormListener = () => {
@@ -172,14 +196,13 @@ const drawPostDetails = ({ post, comments }: any) => {
   let deleteBtnTitle;
   let disabledColor;
 
-  const counter = new countdown();
-  const closed = counter.count(post.id, post.expiresAt, false);
+  const isClosed = isPostClosed(post);
 
   let voteBtnText = "VOTE";
   let closedClass = "";
 
-  if (closed === "Closed") {
-    closedClass = closed;
+  if (isClosed) {
+    closedClass = "closed";
     voteBtnText = "CLOSED";
   } else {
     closedClass = "";
@@ -189,7 +212,7 @@ const drawPostDetails = ({ post, comments }: any) => {
     voteBtnText = "YOU VOTED";
   }
 
-  if (closed === "Closed" || voteBtnText === "YOU VOTED") {
+  if (isClosed || voteBtnText === "YOU VOTED") {
     checked = "disabled";
     disabledColor = 'style="color: gray"';
     votingDisabled = "disabled";
@@ -255,7 +278,7 @@ const drawPostDetails = ({ post, comments }: any) => {
                 ${formatDate(post.createdAt * 1000)}
               </span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
-              <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
+              ${postCountdown(post)}
               <span class="actions">${actions}</span>
             </div>
             <h1 class="title ${post.type}">${post.title}</h1>
@@ -313,14 +336,13 @@ const drawPost = (post: any) => {
   }
   let voted;
   let closedStatus = "";
-  const counter = new countdown();
-  const closed = counter.count(post.id, post.expiresAt, false);
+  const isClosed = isPostClosed(post);
 
   post.voted === false
     ? (voted = false)
     : (voted = post?.voted?.includes(localStorage.getItem("publicKey")));
 
-  if (closed === "Closed") {
+  if (isClosed) {
     closedStatus = "post-closed";
   } else if (voted === true) {
     closedStatus = "post-voted";
@@ -346,7 +368,7 @@ const drawPost = (post: any) => {
                 post.createdAt * 1000
               )}</span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
-              <span class="countdown" title="Time left (Days : Hours : Minutes)"></span>
+              ${postCountdown(post)}
             </div>
           </div>
         </div>

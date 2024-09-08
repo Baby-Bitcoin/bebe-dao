@@ -24,7 +24,8 @@ module.exports = class Post {
       description: postData.description,
       options: options,
       createdAt: currentUnixTimestamp(),
-      expiresAt: currentUnixTimestamp() + parseInt(this.duration) * 24 * 3600,
+      expiresAt:
+        currentUnixTimestamp() + parseInt(postData.duration) * 24 * 3600,
       tags: postData.tags,
       votes: postData.votes?.map((vote) => parseInt(vote)),
       quorum: postData.quorum,

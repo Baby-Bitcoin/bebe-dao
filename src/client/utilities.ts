@@ -1,5 +1,7 @@
 /// <reference types="user-agent-data-types" />
 
+import { $ } from "./ui.js";
+
 const browserType = () => {
   const userAgent =
     navigator.userAgent ||
@@ -63,8 +65,59 @@ const shorthandAddress = (address, length = 4) => {
   )}`;
 };
 
-const wait = (seconds = 1) => {
+const wait = (seconds: number = 1) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
-export { browserType, prettifyNumber, formatDate, shorthandAddress, wait };
+const countdown = (seconds: number, divId: string) => {
+  if (seconds < 0) {
+    return "Closed";
+  }
+
+  const formatTime = (secs: number): string => {
+    const days = Math.floor(secs / (24 * 60 * 60));
+    secs %= 24 * 60 * 60;
+    const hours = Math.floor(secs / (60 * 60));
+    secs %= 60 * 60;
+    const minutes = Math.floor(secs / 60);
+    const remainingSeconds = secs % 60;
+
+    let output = [];
+    if (days > 0) {
+      output.push(`${days}d`);
+    }
+    if (hours > 0) {
+      output.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+      output.push(`${minutes}m`);
+    }
+    if (remainingSeconds > 0) {
+      output.push(`${remainingSeconds}s`);
+    }
+    // Simplified formatting
+    return output.join(" ");
+  };
+
+  const intervalId = setInterval(() => {
+    $(divId).innerHTML = formatTime(seconds);
+    if (seconds <= 0) clearInterval(intervalId);
+    seconds--;
+  }, 1000);
+
+  return formatTime(seconds);
+};
+
+const currentUnixTimestamp = () => {
+  return Math.floor(Date.now() / 1000);
+};
+
+export {
+  browserType,
+  prettifyNumber,
+  formatDate,
+  shorthandAddress,
+  wait,
+  countdown,
+  currentUnixTimestamp,
+};
