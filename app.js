@@ -209,17 +209,17 @@ app.post("/post", uploadPostImage.single("image"), async (req, res) => {
   if (error) {
     res.status(401).send(error.details[0].message);
     return;
-  } else {
-    const post = new Post({
-      ...req.body,
-      ...req.file,
-      walletAddress: req.session.publicKey,
-    });
-
-    post.save();
-
-    res.send({ status: 200, id: 0 });
   }
+
+  const post = new Post({
+    ...req.body,
+    ...req.file,
+    walletAddress: req.session.publicKey,
+  });
+
+  post.save();
+
+  res.send({ status: 200, id: 0 });
 });
 
 app.post("/vote", (req, res) => {
@@ -282,11 +282,11 @@ app.post("/address-info", async (req, res) => {
   if (error) {
     res.status(401).send(error.details[0].message);
     return;
-  } else {
-    const address = await addressInfo(req.body);
-    req.session.publicKey = address.address;
-    res.send(address);
   }
+
+  const address = await addressInfo(req.body);
+  req.session.publicKey = address.address;
+  res.send(address);
 });
 
 app.post(
@@ -314,6 +314,7 @@ app.post(
 app.post("/comments", (req, res) => {
   const schema = Joi.object({
     postId: Joi.number().integer().max(23000).precision(0).required(),
+    commentId: Joi.number().integer().max(23000).precision(0).optional(),
     type: Joi.string().max(10).required(),
     content: Joi.string().min(2).max(1001).required(),
   });
@@ -338,64 +339,6 @@ app.post("/comments", (req, res) => {
   comment.save();
 
   res.send(comment);
-
-  return;
-
-  let commentData = {};
-  commentData.id = req.body.commentid;
-  commentData.user = req.body.user;
-  commentData.text = req.body.comment;
-
-  let commentsFile = [];
-
-  if (error) {
-    res.status(401).send(error.details[0].message);
-    return;
-  } else {
-    if (fs.existsSync(`./data/comments/#${req.body.postid}.json`)) {
-      commentsFile = JSON.parse(
-        fs.readFileSync(`./data/comments/#${req.body.postid}.json`)
-      );
-    } else {
-      commentsFile = [];
-    }
-
-    let count = 1;
-    // Define the recursive function
-    function countKeys(obj) {
-      for (const key in obj) {
-        if (key === "id") {
-          count++;
-        }
-
-        const value = obj[key];
-        if (typeof value === "object") {
-          countKeys(value);
-        }
-      }
-    }
-
-    countKeys(commentsFile);
-
-    commentData.id = count;
-
-    if (req.body.type === "comment") {
-      commentData.replies = [];
-      commentsFile.push(commentData);
-    } else {
-      const comment = commentsFile.find(
-        (comment) => comment.id === req.body.commentid
-      );
-      comment.replies.push(commentData);
-    }
-
-    fs.writeFileSync(
-      `./data/comments/#${req.body.postid}.json`,
-      JSON.stringify(commentsFile)
-    );
-
-    res.send({ status: 200 });
-  }
 });
 
 app.listen(9632);

@@ -1,4 +1,8 @@
-import { drawPostCommentsSection, startComment } from "./comments.js";
+import {
+  attachListenersToCommentBoxes,
+  drawPostCommentsSection,
+  startComment,
+} from "./comments.js";
 import { ADMINS } from "./config.js";
 import { countdown } from "./countdown.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
@@ -290,6 +294,7 @@ const drawPostDetails = ({ post, comments }: any) => {
 
   $("#posts").innerHTML = htmlStr;
   startComment(post);
+  attachListenersToCommentBoxes(post);
 };
 
 const drawPost = (post: any) => {
