@@ -92,7 +92,7 @@ const isPostClosed = (post: any) => {
 };
 
 const postCountdown = (post: any) => {
-  console.log("post", post);
+
   const divId = `post-${post.id}-countdown`;
 
   const html = `
@@ -174,7 +174,6 @@ const attachListenersToAddresses = () => {
     el.addEventListener("click", function (event) {
       event.preventDefault();
       const address = (event.target as any).getAttribute("data-address");
-      console.log(address);
       postActions({ ...currentPostsFilters(), address });
     });
   });
@@ -281,7 +280,6 @@ const drawPostDetails = ({ post, comments }: any) => {
           <div class="content">
             <div class="user_info flex">
               <span class="${post.type} post-type">${post.type}</span>
-              <b class="${post.type}">#${post.id}</b>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
               <span class="date" title="Date posted">
                 ${formatDate(post.createdAt * 1000)}

@@ -1148,6 +1148,10 @@ footer img {
   display: inline-block;
 }
 
+.countdown {
+  min-width: 95px;
+}
+
 .voting {
   position: relative;
   width: 230px;
