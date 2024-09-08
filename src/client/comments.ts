@@ -103,7 +103,6 @@ const attachListenersToCommentBoxes = (post: any) => {
   let shownReplies = {};
   $$(".comment-box").forEach((el) => {
     el.addEventListener("click", function (event) {
-      // event.preventDefault();
       const commentId = parseInt(el.id.split("comment-")[1]);
       const replyForm = $(`#reply-to-${commentId}`);
       if (!replyForm || shownReplies[commentId]) {
@@ -113,7 +112,6 @@ const attachListenersToCommentBoxes = (post: any) => {
       replyForm.classList.remove("hide");
       replyForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        console.log(".....");
         const data = {
           postId: post.id,
           commentId,

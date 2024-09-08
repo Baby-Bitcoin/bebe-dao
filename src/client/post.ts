@@ -14,6 +14,7 @@ import {
   shorthandAddress,
   wait,
 } from "./utilities.js";
+import { attachListenersToVote } from "./vote.js";
 import { features } from "./welcome.js";
 
 let filter = null;
@@ -225,7 +226,12 @@ const drawPostDetails = ({ post, comments }: any) => {
 
   options &&
     options.forEach((option, i) => {
-      pollHTML += `<li><input id="post-${post.id}-option-${i}" type="radio" name="post-${post.id}-options" value="${i}" ${checked}/> <label for="post-${post.id}-option-${i}" ${disabledColor}>${option}</label></li>`;
+      pollHTML += `
+        <li>
+          <input id="post-${post.id}-option-${i}" type="radio" name="post-${post.id}-options" value="${i}" ${checked}/>
+          <label for="post-${post.id}-option-${i}" ${disabledColor}>${option}</label>
+        </li>
+      `;
     });
 
   pollHTML = "<ol>" + pollHTML + "</ol>";
@@ -248,7 +254,10 @@ const drawPostDetails = ({ post, comments }: any) => {
 
   // const totalMembers =
   //   "<b>" + Object.keys(post.members).length + "</b> total users";
-  const totalMembers = "<b>" + 1 + "</b> total users";
+  const usersNeeded = Math.ceil(
+    (post.quorum / 100) * post.totalCurrentAddresses
+  );
+  const totalMembers = `0/${usersNeeded} users (${post.quorum}% quorum)`;
 
   const htmlStr = `
     <article class="post ${closedClass}" id="post-${post.id}">
@@ -320,6 +329,7 @@ const drawPostDetails = ({ post, comments }: any) => {
   $("#posts").innerHTML = htmlStr;
   startComment(post);
   attachListenersToCommentBoxes(post);
+  attachListenersToVote(post);
 };
 
 const drawPost = (post: any) => {

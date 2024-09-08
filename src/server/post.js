@@ -28,12 +28,15 @@ module.exports = class Post {
         currentUnixTimestamp() + parseInt(postData.duration) * 24 * 3600,
       tags: postData.tags,
       votes: postData.votes?.map((vote) => parseInt(vote)),
-      quorum: postData.quorum,
+      quorum: parseInt(postData.quorum),
     };
   }
 
   async save() {
     this.data.id = await RedisClient.getNewId(RedisClient.POSTS_DB);
+    this.data.totalCurrentAddresses = (
+      await RedisClient.getAllKeys(RedisClient.ADDRESSES_DB)
+    ).length;
     await RedisClient.jsonset(RedisClient.POSTS_DB, this.data.id, this.data);
     return RedisClient.jsonget(RedisClient.POSTS_DB, this.data.id);
   }
