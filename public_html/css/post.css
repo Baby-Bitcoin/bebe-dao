@@ -1,214 +1,215 @@
 .postPage .grid {
-    display: block
+  display: block;
 }
 
 .postPage .post {
-    padding-bottom: 32px;
-    margin-bottom: 0;
-    border: 0;
+  padding-bottom: 32px;
+  margin-bottom: 0;
+  border: 0;
 }
 
 .postPage .post:hover {
-    background: none;
-    border-radius: 0;
-    box-shadow: none;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .postPage .title,
 .postPage .title:visited {
-    margin-top: 10px;
-    font-size: 23px;
-    line-height: 1.4;
-    overflow: visible
+  margin-top: 10px;
+  font-size: 23px;
+  line-height: 1.4;
+  overflow: visible;
 }
 
 .postPage .post h2 {
-    font-size: 18px
+  font-size: 18px;
 }
 
 .postPage .main-image {
-    width: 230px;
-    position: relative
+  width: 230px;
+  position: relative;
 }
 
 .main-image .main-image-username {
-    position: absolute;
-    z-index: 1;
-    top: 10px;
-    left: 12px
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  left: 12px;
 }
 
 .main-image .user {
-    letter-spacing: 0.5px;
-    color: var(--image-user);
-    text-shadow: 0 0 6px var(--image-user-shadow);
+  letter-spacing: 0.5px;
+  color: var(--image-user);
+  text-shadow: 0 0 6px var(--image-user-shadow);
 }
 
 .postAvatar {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-    border-radius: 51%;
-    position: relative;
-    overflow: hidden;
-    box-sizing: content-box;
-    box-shadow: 0 0 6px var(--image-user-shadow);
-    background: url(/img/love-technology.jpg) no-repeat;
-    background-size: cover;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 51%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: content-box;
+  box-shadow: 0 0 6px var(--image-user-shadow);
+  background-size: cover;
 }
 
 .postAvatar img {
-    width: 32px;
-    position: absolute;
-    top: 0;
-    left: 0;
+  width: 32px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .postPage .main-image img {
-    max-width: 230px;
+  max-width: 230px;
 }
 
 .indexPost .post-type {
-    vertical-align: initial;
+  vertical-align: initial;
 }
 
 .indexPost user {
-    margin-left: 0
+  margin-left: 0;
 }
 
 .comments-section {
-    text-align: left;
-    padding: 23px 0;
-    margin-top: 12px;
-    border-top: 1px dashed var(--second-contrast-32)
+  text-align: left;
+  padding: 23px 0;
+  margin-top: 12px;
+  border-top: 1px dashed var(--second-contrast-32);
 }
 
 .Closed .comments-section {
-    display: block
+  display: block;
 }
 
 .comments-section form {
-    margin-top: 12px;
-    text-align: right;
+  margin-top: 12px;
+  text-align: right;
 }
 
 .comments-section textarea {
-    width: 100%;
-    resize: vertical;
-    display: block;
-    padding: 6px 12px;
-    border-radius: 5px;
-    min-height: 69px;
-    background: var(--comments-textarea-bg);
-    color: var(--comments-textarea-color)
+  width: 100%;
+  resize: vertical;
+  display: block;
+  padding: 6px 12px;
+  border-radius: 5px;
+  min-height: 69px;
+  background: var(--comments-textarea-bg);
+  color: var(--comments-textarea-color);
 }
 
 .submit-comment {
-    text-align: right;
+  text-align: right;
 }
 
 .comments-section input {
-    margin-top: 12px;
-    cursor: pointer
+  margin-top: 12px;
+  cursor: pointer;
 }
 
 .comments {
-    margin-top: 23px
+  margin-top: 23px;
 }
 
 comment {
-    padding: 10px 12px;
-    border-radius: 5px;
-    margin: 23px 0 0 0;
-    display: block;
-    cursor: url(/svgs/reply.svg) 0 23, pointer;
-    transition: background-color 0.23s
+  padding: 10px 12px;
+  border-radius: 5px;
+  margin: 23px 0 0 0;
+  display: block;
+  cursor:
+    url(/svgs/reply.svg) 0 23,
+    pointer;
+  transition: background-color 0.23s;
 }
 
 comment:hover {
-    background-color: var(--sub-header-bg)
+  background-color: var(--sub-header-bg);
 }
 
 reply {
-    margin: 6px 0 0 0;
-    display: block;
+  margin: 6px 0 0 0;
+  display: block;
 }
 
 comment form {
-    padding-left: 23px
+  padding-left: 23px;
 }
 
 comment replies {
-    display: block;
-    padding: 6px 0 0 12px;
-    margin-left: 23px;
+  display: block;
+  padding: 6px 0 0 12px;
+  margin-left: 23px;
 }
 
 comment header {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 comment avatar {
-    width: 32px;
-    height: 32px;
-    position: relative;
-    border-radius: 51%;
-    margin-right: 6px;
-    overflow: hidden;
-    box-sizing: content-box;
+  width: 32px;
+  height: 32px;
+  position: relative;
+  border-radius: 51%;
+  margin-right: 6px;
+  overflow: hidden;
+  box-sizing: content-box;
 }
 
 comment avatar img {
-    width: 32px;
-    position: absolute;
-    top: 0;
-    left: 0;
+  width: 32px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 comment p {
-    margin: 0;
-    padding: 6px 0
+  margin: 0;
+  padding: 6px 0;
 }
 
 .comments .typing {
-    position: relative;
-    margin: 12px 23px;
-    height: 23px;
+  position: relative;
+  margin: 12px 23px;
+  height: 23px;
 }
 
 .typing span {
-    content: '';
-    animation: blink 1.5s infinite;
-    animation-fill-mode: both;
-    height: 10px;
-    width: 10px;
-    background: var(--ink-blue);
-    position: absolute;
-    left: 0;
-    top: 0;
-    border-radius: 50%;
+  content: "";
+  animation: blink 1.5s infinite;
+  animation-fill-mode: both;
+  height: 10px;
+  width: 10px;
+  background: var(--ink-blue);
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
 }
 
 .typing span:nth-of-type(2) {
-    animation-delay: .2s;
-    margin-left: 15px;
+  animation-delay: 0.2s;
+  margin-left: 15px;
 }
 
 .typing span:nth-of-type(3) {
-    animation-delay: .4s;
-    margin-left: 30px;
+  animation-delay: 0.4s;
+  margin-left: 30px;
 }
 
 @keyframes blink {
-    0% {
-        opacity: .1;
-    }
+  0% {
+    opacity: 0.1;
+  }
 
-    20% {
-        opacity: 1;
-    }
+  20% {
+    opacity: 1;
+  }
 
-    100% {
-        opacity: .1;
-    }
+  100% {
+    opacity: 0.1;
+  }
 }

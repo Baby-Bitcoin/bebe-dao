@@ -7,4 +7,13 @@ const getAddressAvatar = (address: any) => {
   return url;
 };
 
-export { getAddressAvatar };
+const getAddressAvatarPostDefault = (address: any) => {
+  let url = "/img/love-technology.jpg";
+  if (address.avatarUrl && address.avatarUrl != "") {
+    url = "/images/addresses/" + address.avatarUrl;
+  }
+
+  return url;
+};
+
+export { getAddressAvatar, getAddressAvatarPostDefault };

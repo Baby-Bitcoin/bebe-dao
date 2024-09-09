@@ -1,3 +1,4 @@
+import { getAddressAvatarPostDefault } from "./address.js";
 import { makeChart } from "./chart.js";
 import {
   attachListenersToCommentBoxes,
@@ -179,7 +180,7 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post, comments, votes }: any) => {
+const drawPostDetails = ({ post, address, comments, votes }: any) => {
   let actions = "";
   const publicKey = localStorage.getItem("publicKey");
   if (publicKey === post.walletAddress || ADMINS.includes(post.walletAddress)) {
@@ -269,7 +270,7 @@ const drawPostDetails = ({ post, comments, votes }: any) => {
               alt="${post.tags}" />
             <div class="main-image-username flex-center">
               <span class="postAvatar avatar" title="Avatar">
-                <img src="/avatars/${post.walletAddress}.webp" />
+                <img src="${getAddressAvatarPostDefault(address)}" />
               </span>
               <span class="user" title="Username">
                 ${shorthandAddress(post.walletAddress, 4)}
