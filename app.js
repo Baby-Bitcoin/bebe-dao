@@ -10,6 +10,7 @@ const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
 const { createRateLimiter } = require("./src/server/limiter");
+const { ADMINS } = require("./src/server/configs");
 
 global.admins = ["lucianape3"];
 
@@ -62,6 +63,7 @@ app.use(express.static(path.join(__dirname, "public_html")));
 
 app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   const data = await Post.find(req.params.postId);
+  data.ADMINS = ADMINS;
 
   res.send(data);
 });
@@ -146,34 +148,19 @@ app.post("/vote", createRateLimiter(100, 15), async (req, res) => {
   }
 });
 
-app.put("/delete", createRateLimiter(100, 15), (req, res) => {
+app.delete("/delete-post", createRateLimiter(100, 15), (req, res) => {
+  if (!req.session.publicKey) {
+    res
+      .status(401)
+      .send({ error: "Make sure your Solana wallet is connected" });
+    return;
+  }
+
   try {
-    const posts = JSON.parse(fs.readFileSync(`./data/posts.json`));
-    const votes = JSON.parse(fs.readFileSync(`./data/votes.json`));
-    const imageToDelete = posts.filter(
-      (post) => post.id === parseInt(req.body.id)
-    );
-    const filteredPosts = posts.filter(
-      (post) => post.id !== parseInt(req.body.id)
-    );
-    const filteredVotes = votes.filter(
-      (vote) => vote.id !== parseInt(req.body.id)
-    );
-
-    // delete the image
-    imageToDelete[0].image !== ""
-      ? fs.unlinkSync("shield/uploads/" + imageToDelete[0].image)
-      : null;
-
-    // delete the comments file
-    fs.unlinkSync("./data/comments/#" + req.body.id + ".json");
-
-    fs.writeFileSync(`./data/posts.json`, JSON.stringify(filteredPosts));
-    fs.writeFileSync(`./data/votes.json`, JSON.stringify(filteredVotes));
-
-    res.send({ status: 200 });
-  } catch (err) {
-    console.error("Delete error: " + err);
+    Post.delete(req.body.id, req.session.publicKey);
+    res.status(202).send({ success: true });
+  } catch (error) {
+    res.status(409).send({ error: error.message });
   }
 });
 

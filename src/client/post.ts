@@ -5,7 +5,6 @@ import {
   drawPostCommentsSection,
   startComment,
 } from "./comments.js";
-import { ADMINS } from "./config.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
 import { $, $$ } from "./ui.js";
@@ -180,14 +179,12 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post, address, comments, votes }: any) => {
+const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
   let actions = "";
   const publicKey = localStorage.getItem("publicKey");
-  if (publicKey === post.walletAddress || ADMINS.includes(post.walletAddress)) {
-    actions = `<button id="delete-${post.id}" class="action-button delete" title="Delete this post"></button>`;
+  if (publicKey === post.walletAddress || ADMINS.includes(publicKey)) {
+    actions = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
-
-  //!data.approved ? actions += `<button id="approve-${data.id}" class="action-button approve" title="Approve this post"></button>` : null
 
   let pollHTML = "";
   const options = post.options;
@@ -209,7 +206,7 @@ const drawPostDetails = ({ post, address, comments, votes }: any) => {
     closedClass = "";
   }
 
-  if (post.voted && post.voted.includes(publicKey)) {
+  if (votes.voters.includes(publicKey)) {
     voteBtnText = "YOU VOTED";
   }
 
@@ -329,7 +326,54 @@ const drawPostDetails = ({ post, address, comments, votes }: any) => {
   startComment(post);
   attachListenersToCommentBoxes(post);
   attachListenersToVote(post);
+  attachListenersToPost(post);
   makeChart(post, votes);
+};
+
+const attachListenersToPost = (post: any) => {
+  const deleteElemet = $(`#delete-post-${post.id}`);
+
+  if (deleteElemet) {
+    deleteElemet.addEventListener("click", () => {
+      deletePost(post);
+    });
+  }
+};
+
+const deletePost = async (post: any) => {
+  const promptString = prompt(
+    "Are you sure you want to delete this post?",
+    "YES"
+  );
+
+  if (promptString != "YES") {
+    return;
+  }
+
+  const result = await fetch("delete-post", {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: post.id }),
+  })
+    .then((response) => response.json())
+    .catch((err) => {
+      console.log(err);
+    });
+
+  if (result.error) {
+    // TO-DO
+    // Prompt error message to the user
+    return;
+  }
+
+  $(".shortMessage").innerHTML =
+    '<div class="quickText"><h2 style="color: red">POST DELETED</h2></div>';
+
+  await wait();
+  window.location.href = "/";
 };
 
 const drawPost = (post: any) => {
@@ -388,64 +432,6 @@ const drawPost = (post: any) => {
 
   $("#posts").innerHTML += htmlStr;
 };
-
-// const postFunctions = (item, index, charts, voteBTNlisteners, deleteBTNs) => {
-//   // let's reverse order of data on the client, to save computing power on server and to have most recent posts to be first
-//   const latestPosts = {}; //filteredData.posts.reverse()
-//   let latestVotes;
-
-//   // populate HTML function
-//   if (populatePosts === true) {
-//     let html;
-//     // if the URL coming from page load on main.js and passed to this postActions function does not contain any title or tag parameters, use indexHTML, else, use HTML
-//     let indexPage = true;
-
-//     if (
-//       typeof queryURL === "string" ||
-//       queryURL.type === "search" ||
-//       queryURL.type === "tag"
-//     ) {
-//       html = new indexHTML();
-//     } else {
-//       html = new HTML();
-//       indexPage = false;
-//     }
-
-//     $("#posts").innerHTML += html.insertHTML({
-//       ...item,
-//       ...latestVotes[index],
-//       ...filteredData.comments,
-//       members: data.members,
-//     });
-
-//     indexPage === false ? commentEvents(filteredData.posts[0].id) : null;
-//   }
-
-//   // remake all charts functiony
-//   if (charts === true) {
-//     makeChart(latestPosts, latestVotes);
-//   }
-
-//   // voteBTNs addEventListeners
-//   if (voteBTNlisteners === true) {
-//     voteBTN();
-//   }
-
-//   // delete btns addEventListeners
-//   if (deleteBTNs === true) {
-//     const deleteBTN = $(".delete");
-//     deleteBTN &&
-//       deleteBTN.addEventListener("click", (event) => {
-//         // get the id (title) of the clicked post
-//         const arr = event.target.id.split("-");
-//         const id = arr.at(-1);
-//         deletePost(id, user);
-//       });
-//   }
-
-//   const counter = new countdown();
-//   counter.count(item.id, latestVotes[index].expires, true);
-// };
 
 const postActions = async (filters: any = {}) => {
   $("#select-type").style.display = "block";

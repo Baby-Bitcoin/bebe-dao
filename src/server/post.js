@@ -1,6 +1,18 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const RedisClient = require("./redis");
 const Comment = require("./comment");
+const { ADMINS } = require("./configs");
+const fs = require("fs");
+const path = require("path");
+
+const IMAGE_PREFIX = path.join(
+  __dirname,
+  "..",
+  "..",
+  "public_html",
+  "images",
+  "posts"
+);
 
 module.exports = class Post {
   constructor(postData) {
@@ -90,6 +102,21 @@ module.exports = class Post {
     }
 
     return posts.reverse();
+  }
+
+  static async delete(postId, publicKey) {
+    const post = await RedisClient.jsonget(RedisClient.POSTS_DB, postId);
+    if (!post) {
+      throw new Error("Post doesn't exist");
+    }
+
+    const isAuthorized =
+      publicKey === post.walletAddress || ADMINS.includes(publicKey);
+    if (!isAuthorized) {
+      throw new Error("Not authorized to delete this post");
+    }
+    await RedisClient.delete(RedisClient.POSTS_DB, post.id);
+    fs.rmSync(path.join(IMAGE_PREFIX, post.imageUrl), { force: true });
   }
 
   static queryMatchesPost(query, post) {
