@@ -1,4 +1,4 @@
-import { getAddressAvatarPostDefault } from "./address.js";
+import { getAddressAvatarPostDefault, toggleBanAddress } from "./address.js";
 import { makeChart } from "./chart.js";
 import {
   attachListenersToCommentBoxes,
@@ -18,6 +18,8 @@ import { attachListenersToVote } from "./vote.js";
 import { features } from "./welcome.js";
 
 let filter = null;
+
+let globalPost = {};
 
 const handlePostSubmit = async () => {
   $("#post-form").addEventListener("submit", async (event) => {
@@ -189,6 +191,16 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     actions = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
 
+  if (ADMINS.includes(publicKey)) {
+    actions += `
+      <button 
+        id="ban-address-${post.walletAddress}"
+        class="action-button ban ${address.isBanned ? "banned" : ""}"
+        title="${address.isBanned ? "Unban" : "Ban"} this address">
+      </button>
+      `;
+  }
+
   let pollHTML = "";
   const options = post.options;
 
@@ -252,8 +264,6 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     .replace(/<script[^>]*>/g, "<code>")
     .replace(/<\/script>/g, "</code>");
 
-  // const totalMembers =
-  //   "<b>" + Object.keys(post.members).length + "</b> total users";
   const usersNeeded = Math.ceil(
     (post.quorum / 100) * post.totalCurrentAddresses
   );
@@ -328,16 +338,22 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
   $("#posts").innerHTML = htmlStr;
   attachListenersToCommentBoxes(post);
   attachListenersToVote(post);
-  attachListenersToPost(post);
+  attachListenersToPost(post, address);
   makeChart(post, votes);
 };
 
-const attachListenersToPost = (post: any) => {
+const attachListenersToPost = (post: any, address: any = {}) => {
   const deleteElemet = $(`#delete-post-${post.id}`);
-
   if (deleteElemet) {
     deleteElemet.addEventListener("click", () => {
       deletePost(post);
+    });
+  }
+
+  const banElement = $(`#ban-address-${post.walletAddress}`);
+  if (banElement) {
+    banElement.addEventListener("click", () => {
+      toggleBanAddress(post.walletAddress, address.isBanned ? "unban" : "ban");
     });
   }
 };
@@ -477,6 +493,7 @@ const loadSinglePost = async (postId: number) => {
     response.json()
   );
 
+  globalPost = data;
   drawPostDetails(data);
 
   $("#loader").style.setProperty("display", "none");
@@ -497,4 +514,6 @@ export {
   loadSinglePost,
   isPostClosed,
   areCommentsAllowed,
+  globalPost,
+  drawPostDetails,
 };

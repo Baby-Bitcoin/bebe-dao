@@ -82,6 +82,24 @@ module.exports = class Address {
 
     return address.isBanned == true;
   }
+
+  static async toggleAddressBan(publicKey, selfPublicKey) {
+    const address = await this.find(publicKey);
+    if (!address) {
+      throw new Error(
+        `The wallet address ${publicKey} doesn't exist in our records`
+      );
+    }
+
+    if (publicKey == selfPublicKey) {
+      throw new Error("You are not allowed to ban yourself!");
+    }
+
+    address.isBanned = !address.isBanned;
+
+    await RedisClient.jsonset(RedisClient.ADDRESSES_DB, publicKey, address);
+    return RedisClient.jsonget(RedisClient.ADDRESSES_DB, publicKey, address);
+  }
 };
 
 module.exports.addressInfo = addressInfo;

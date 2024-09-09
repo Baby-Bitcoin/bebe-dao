@@ -1089,14 +1089,19 @@ footer img {
   margin: -4px 0 0 9px;
 }
 
+.post .ban,
 .post .delete {
   background: url(/svgs/trash.svg) no-repeat 50% 50%;
   background-size: 23px 23px;
 }
 
-.post .approve {
-  background: url(/svgs/checked.svg) no-repeat 50% 50%;
-  background-size: 23px 23px;
+.post .ban {
+  background: url(/svgs/ban.svg) no-repeat 50% 50%;
+}
+
+
+.post .banned {
+  background: url(/svgs/unban.svg) no-repeat 50% 50%;
 }
 
 .index-user {
@@ -1522,7 +1527,7 @@ canvas {
   display: block;
   margin-top: 10px;
   text-align: center;
-  color: var(--white)
+  color: var(--white);
 }
 
 @keyframes loader {

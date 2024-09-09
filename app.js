@@ -10,8 +10,13 @@ const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
 const { createRateLimiter } = require("./src/server/limiter");
-const { banStatus, publicKeyIsRequired } = require("./src/server/auth");
+const {
+  banStatus,
+  publicKeyIsRequired,
+  onlyAdminAction,
+} = require("./src/server/auth");
 const { ADMINS } = require("./src/server/configs");
+const Address = require("./src/server/address");
 
 global.admins = ["lucianape3"];
 
@@ -202,6 +207,35 @@ app.post(
 
     try {
       const address = await addressInfo(req.body);
+      res.send(address);
+    } catch (error) {
+      res.status(409).send({ error: error.message });
+    }
+  }
+);
+
+app.post(
+  "/toggle-address-ban",
+  createRateLimiter(100, 15),
+  banStatus,
+  publicKeyIsRequired,
+  onlyAdminAction,
+  async (req, res) => {
+    const schema = Joi.object({
+      walletAddress: Joi.string().max(58).required(),
+    });
+
+    const { error } = schema.validate(req.body, () => {});
+    if (error) {
+      res.status(401).send(error.details[0].message);
+      return;
+    }
+
+    try {
+      const address = await Address.toggleAddressBan(
+        req.body.walletAddress,
+        req.session.publicKey
+      );
       res.send(address);
     } catch (error) {
       res.status(409).send({ error: error.message });

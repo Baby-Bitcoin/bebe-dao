@@ -1,4 +1,5 @@
 const Address = require("./address");
+const { ADMINS } = require("./configs");
 
 const banStatus = async (req, res, next) => {
   const isBanned = await Address.isBanned(req.session.publicKey);
@@ -18,4 +19,14 @@ const publicKeyIsRequired = (req, res, next) => {
   next();
 };
 
-module.exports = { banStatus, publicKeyIsRequired };
+const onlyAdminAction = (req, res, next) => {
+  if (!ADMINS.includes(req.session.publicKey)) {
+    return res
+      .status(401)
+      .send({ error: "You are not allowed to access this endpoint" });
+  }
+
+  next();
+};
+
+module.exports = { banStatus, publicKeyIsRequired, onlyAdminAction };
