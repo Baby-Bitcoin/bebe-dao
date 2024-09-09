@@ -1,6 +1,7 @@
 const RedisClient = require("./redis.js");
 const fs = require("fs");
 const { currentUnixTimestamp } = require("./utilities.js");
+const { FORBIDDEN_USERNAMES } = require("./configs.js");
 const path = require("path");
 
 const AVATAR_PREFIX = path.join(
@@ -13,6 +14,10 @@ const AVATAR_PREFIX = path.join(
 );
 
 const addressInfo = async function (data, avatarUrl = null) {
+  if (FORBIDDEN_USERNAMES.includes(data.username)) {
+    throw new Error(`Not allowed to use ${data.username} as username`);
+  }
+
   let address = await RedisClient.jsonget(
     RedisClient.ADDRESSES_DB,
     data.address

@@ -176,9 +176,13 @@ app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
     return;
   }
 
-  const address = await addressInfo(req.body);
-  req.session.publicKey = address.address;
-  res.send(address);
+  try {
+    const address = await addressInfo(req.body);
+    req.session.publicKey = address.address;
+    res.send(address);
+  } catch (error) {
+    res.status(409).send({ error: error.message });
+  }
 });
 
 app.post(
@@ -193,13 +197,16 @@ app.post(
     });
 
     const { error } = schema.validate(req.body, () => {});
-
     if (error) {
       res.status(401).send(error.details[0].message);
       return;
-    } else {
-      const address = await addressInfo(req.body, req.file?.filename);
+    }
+
+    try {
+      const address = await addressInfo(req.body);
       res.send(address);
+    } catch (error) {
+      res.status(409).send({ error: error.message });
     }
   }
 );
