@@ -206,7 +206,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     closedClass = "";
   }
 
-  if (votes.voters.includes(publicKey)) {
+  if (votes.voters?.includes?.(publicKey)) {
     voteBtnText = "YOU VOTED";
   }
 
