@@ -705,6 +705,7 @@ __metadata:
     ejs: ^3.1.8
     express: ^4.17.3
     express-handlebars: ^8.0.1
+    express-rate-limit: ^7.4.0
     express-session: ^1.18.0
     https: ^1.0.0
     ioredis: ^5.4.1
@@ -1433,6 +1434,15 @@ __metadata:
     graceful-fs: ^4.2.11
     handlebars: ^4.7.8
   checksum: 6faa61f1b3f4708c1e2f5e646b17afb31524de408ee21602eff649a3bdc5f1b7cbf85f6649a8fc5e12aa9792c423d207ba84a5ef729463729cca0e5a9568ecaf
+  languageName: node
+  linkType: hard
+
+"express-rate-limit@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "express-rate-limit@npm:7.4.0"
+  peerDependencies:
+    express: 4 || 5 || ^5.0.0-beta.1
+  checksum: 81ddba751b401ff7f04207155dd0559938b5614754f73950d86acc1463dd7ea6a458a5ba941bcf108e8913b786bca6cde94c19ba504cf61f864edf92cc1bdbae
   languageName: node
   linkType: hard
 

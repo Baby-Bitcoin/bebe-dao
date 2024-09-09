@@ -9,6 +9,7 @@ const Comment = require("./src/server/comment");
 const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
+const { createRateLimiter } = require("./src/server/limiter");
 
 global.admins = ["lucianape3"];
 
@@ -52,66 +53,70 @@ app.use(
     cookie: { secure: false }, // Set to true if using HTTPS
   })
 );
+// app.use(createRateLimiter(100, 15));
 
 // express.json to decifer json data from incoming requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public_html")));
 
-app.get("/posts/:postId", async (req, res) => {
+app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   const data = await Post.find(req.params.postId);
 
   res.send(data);
 });
 
-// GETs all data from posts.json file
-app.get("/posts", async (req, res) => {
+app.get("/posts", createRateLimiter(100, 15), async (req, res) => {
   const posts = await Post.all(req.query);
   res.send(posts);
 });
 
-// POST to the posts.json file
-app.post("/post", uploadPostImage.single("image"), async (req, res) => {
-  if (!req.session.publicKey) {
-    res
-      .status(401)
-      .send({ error: "Make sure your Solana wallet is connected" });
-    return;
+app.post(
+  "/post",
+  createRateLimiter(100, 15),
+  uploadPostImage.single("image"),
+  async (req, res) => {
+    if (!req.session.publicKey) {
+      res
+        .status(401)
+        .send({ error: "Make sure your Solana wallet is connected" });
+      return;
+    }
+
+    const schema = Joi.object({
+      title: Joi.string().max(124).required(),
+      duration: Joi.number().integer().min(1).max(30).required(),
+      description: Joi.string().max(10001).required(), // apparently you need to add 1 extra character because it does not match front-end otherwise
+      options: Joi.array().max(1025).required(),
+      tags: Joi.string().max(124).required(),
+      type: Joi.string().max(13).required(),
+      votes: Joi.array().max(1025).required(),
+      quorum: Joi.number().min(1).max(100).required(),
+    });
+
+    const { error } = schema.validate(req.body, () => {});
+
+    // TO-DO:
+    // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
+
+    if (error) {
+      res.status(401).send(error.details[0].message);
+      return;
+    }
+
+    const post = new Post({
+      ...req.body,
+      ...req.file,
+      walletAddress: req.session.publicKey,
+    });
+
+    const createdPost = await post.save();
+
+    res.send(createdPost);
   }
+);
 
-  const schema = Joi.object({
-    title: Joi.string().max(124).required(),
-    duration: Joi.number().integer().min(1).max(30).required(),
-    description: Joi.string().max(10001).required(), // apparently you need to add 1 extra character because it does not match front-end otherwise
-    options: Joi.array().max(1025).required(),
-    tags: Joi.string().max(124).required(),
-    type: Joi.string().max(13).required(),
-    votes: Joi.array().max(1025).required(),
-    quorum: Joi.number().min(1).max(100).required(),
-  });
-
-  const { error } = schema.validate(req.body, () => {});
-
-  // TO-DO:
-  // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
-
-  if (error) {
-    res.status(401).send(error.details[0].message);
-    return;
-  }
-
-  const post = new Post({
-    ...req.body,
-    ...req.file,
-    walletAddress: req.session.publicKey,
-  });
-
-  const createdPost = await post.save();
-
-  res.send(createdPost);
-});
-
-app.post("/vote", async (req, res) => {
+app.post("/vote", createRateLimiter(100, 15), async (req, res) => {
   if (!req.session.publicKey) {
     res
       .status(401)
@@ -141,7 +146,7 @@ app.post("/vote", async (req, res) => {
   }
 });
 
-app.put("/delete", (req, res) => {
+app.put("/delete", createRateLimiter(100, 15), (req, res) => {
   try {
     const posts = JSON.parse(fs.readFileSync(`./data/posts.json`));
     const votes = JSON.parse(fs.readFileSync(`./data/votes.json`));
@@ -172,7 +177,7 @@ app.put("/delete", (req, res) => {
   }
 });
 
-app.post("/address-info", async (req, res) => {
+app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
     address: Joi.string().max(58).required(),
   });
@@ -191,6 +196,7 @@ app.post("/address-info", async (req, res) => {
 
 app.post(
   "/address-info-form",
+  createRateLimiter(100, 15),
   uploadAddressAvatar.single("avatar"),
   async (req, res) => {
     const schema = Joi.object({
@@ -211,7 +217,7 @@ app.post(
   }
 );
 
-app.post("/comments", (req, res) => {
+app.post("/comments", createRateLimiter(100, 15), (req, res) => {
   if (!req.session.publicKey) {
     res
       .status(401)
