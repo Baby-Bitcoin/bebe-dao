@@ -69,4 +69,19 @@ const addressInfo = async function (data, avatarUrl = null) {
   };
 };
 
+module.exports = class Address {
+  static async find(publicKey) {
+    return RedisClient.jsonget(RedisClient.ADDRESSES_DB, publicKey);
+  }
+
+  static async isBanned(publicKey) {
+    const address = await this.find(publicKey);
+    if (!address) {
+      return false;
+    }
+
+    return address.isBanned == true;
+  }
+};
+
 module.exports.addressInfo = addressInfo;

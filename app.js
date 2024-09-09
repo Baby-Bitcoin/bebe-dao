@@ -10,6 +10,7 @@ const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
 const { createRateLimiter } = require("./src/server/limiter");
+const { banStatus, publicKeyIsRequired } = require("./src/server/auth");
 const { ADMINS } = require("./src/server/configs");
 
 global.admins = ["lucianape3"];
@@ -76,15 +77,10 @@ app.get("/posts", createRateLimiter(100, 15), async (req, res) => {
 app.post(
   "/post",
   createRateLimiter(100, 15),
+  banStatus,
+  publicKeyIsRequired,
   uploadPostImage.single("image"),
   async (req, res) => {
-    if (!req.session.publicKey) {
-      res
-        .status(401)
-        .send({ error: "Make sure your Solana wallet is connected" });
-      return;
-    }
-
     const schema = Joi.object({
       title: Joi.string().max(124).required(),
       duration: Joi.number().integer().min(1).max(30).required(),
@@ -118,51 +114,52 @@ app.post(
   }
 );
 
-app.post("/vote", createRateLimiter(100, 15), async (req, res) => {
-  if (!req.session.publicKey) {
-    res
-      .status(401)
-      .send({ error: "Make sure your Solana wallet is connected" });
-    return;
+app.post(
+  "/vote",
+  createRateLimiter(100, 15),
+  banStatus,
+  publicKeyIsRequired,
+  async (req, res) => {
+    // Joi Schema = how the incoming input data is validated
+    const schema = Joi.object({
+      postId: Joi.number().integer().max(23000).precision(0).required(),
+      optionIndex: Joi.number().integer().required(),
+    });
+
+    const { error } = schema.validate(req.body, () => {});
+
+    if (error) {
+      res.status(401).send(error.details[0].message);
+      return;
+    }
+
+    const vote = new Vote({
+      ...req.body,
+      walletAddress: req.session.publicKey,
+    });
+    try {
+      const newVotes = await vote.save();
+      res.send(newVotes);
+    } catch (error) {
+      res.status(409).send({ error: error.message });
+    }
   }
+);
 
-  // Joi Schema = how the incoming input data is validated
-  const schema = Joi.object({
-    postId: Joi.number().integer().max(23000).precision(0).required(),
-    optionIndex: Joi.number().integer().required(),
-  });
-
-  const { error } = schema.validate(req.body, () => {});
-
-  if (error) {
-    res.status(401).send(error.details[0].message);
-    return;
+app.delete(
+  "/delete-post",
+  createRateLimiter(100, 15),
+  banStatus,
+  publicKeyIsRequired,
+  (req, res) => {
+    try {
+      Post.delete(req.body.id, req.session.publicKey);
+      res.status(202).send({ success: true });
+    } catch (error) {
+      res.status(409).send({ error: error.message });
+    }
   }
-
-  const vote = new Vote({ ...req.body, walletAddress: req.session.publicKey });
-  try {
-    const newVotes = await vote.save();
-    res.send(newVotes);
-  } catch (error) {
-    res.status(409).send({ error: error.message });
-  }
-});
-
-app.delete("/delete-post", createRateLimiter(100, 15), (req, res) => {
-  if (!req.session.publicKey) {
-    res
-      .status(401)
-      .send({ error: "Make sure your Solana wallet is connected" });
-    return;
-  }
-
-  try {
-    Post.delete(req.body.id, req.session.publicKey);
-    res.status(202).send({ success: true });
-  } catch (error) {
-    res.status(409).send({ error: error.message });
-  }
-});
+);
 
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
@@ -188,6 +185,7 @@ app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
 app.post(
   "/address-info-form",
   createRateLimiter(100, 15),
+  banStatus,
   uploadAddressAvatar.single("avatar"),
   async (req, res) => {
     const schema = Joi.object({
@@ -211,36 +209,35 @@ app.post(
   }
 );
 
-app.post("/comments", createRateLimiter(100, 15), (req, res) => {
-  if (!req.session.publicKey) {
-    res
-      .status(401)
-      .send({ error: "Make sure your Solana wallet is connected" });
-    return;
+app.post(
+  "/comments",
+  createRateLimiter(100, 15),
+  banStatus,
+  publicKeyIsRequired,
+  (req, res) => {
+    const schema = Joi.object({
+      postId: Joi.number().integer().max(23000).precision(0).required(),
+      commentId: Joi.number().integer().max(23000).precision(0).optional(),
+      type: Joi.string().max(10).required(),
+      content: Joi.string().min(2).max(1001).required(),
+    });
+
+    const { error } = schema.validate(req.body, () => {});
+
+    if (error) {
+      res.status(401).send(error.details[0].message);
+      return;
+    }
+
+    const comment = new Comment({
+      ...req.body,
+      walletAddress: req.session.publicKey,
+    });
+
+    comment.save();
+
+    res.send(comment);
   }
-
-  const schema = Joi.object({
-    postId: Joi.number().integer().max(23000).precision(0).required(),
-    commentId: Joi.number().integer().max(23000).precision(0).optional(),
-    type: Joi.string().max(10).required(),
-    content: Joi.string().min(2).max(1001).required(),
-  });
-
-  const { error } = schema.validate(req.body, () => {});
-
-  if (error) {
-    res.status(401).send(error.details[0].message);
-    return;
-  }
-
-  const comment = new Comment({
-    ...req.body,
-    walletAddress: req.session.publicKey,
-  });
-
-  comment.save();
-
-  res.send(comment);
-});
+);
 
 app.listen(9632);
