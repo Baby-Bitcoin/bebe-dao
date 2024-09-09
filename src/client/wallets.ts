@@ -298,7 +298,6 @@ const startup = () => {
     }
 
     const formData = new FormData();
-    console.log({ image, username }, username.value);
     formData.append("address", wallet.adapter.publicKey.toBase58());
     formData.append("username", username.value);
     formData.append("email", email.value);
@@ -318,8 +317,6 @@ const startup = () => {
       result.address,
       result.avatarUrl
     );
-
-    console.log("submitProfilesubmitProfile", { result });
   });
 };
 

@@ -1,7 +1,8 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const RedisClient = require("./redis");
+const Post = require("./post");
 
-module.exports = class Comment {
+class Comment {
   constructor(commentData) {
     this.type = commentData.type;
     this.postId = commentData.postId;
@@ -15,6 +16,15 @@ module.exports = class Comment {
   }
 
   async save() {
+    const post = await Post.find(this.postId);
+    if (!post) {
+      throw new Error("Post doesn't exist");
+    }
+
+    if (!Post.areCommentsAllowed(post)) {
+      throw new Error("Comments will be opened after the voting period ends");
+    }
+
     let postComments =
       (await RedisClient.jsonget(RedisClient.COMMENTS_DB, this.postId)) || [];
     this.data.id = postComments.length + 1;
@@ -48,20 +58,6 @@ module.exports = class Comment {
 
     return comment;
   }
+}
 
-  static async findByPostId(postId) {
-    let comments =
-      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, postId)) || [];
-
-    for (let index = 0; index < comments.length; index++) {
-      comments[index] = await this.mergeCommentAddress(comments[index]);
-      for (let index2 = 0; index2 < comments[index].replies.length; index2++) {
-        comments[index].replies[index2] = await this.mergeCommentAddress(
-          comments[index].replies[index2]
-        );
-      }
-    }
-
-    return comments.reverse();
-  }
-};
+module.exports = Comment;

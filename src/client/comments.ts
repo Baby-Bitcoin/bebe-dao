@@ -1,24 +1,33 @@
 import { $, $$ } from "./ui.js";
-import { countdown } from "./countdown.js";
 import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
 import { getAddressAvatar } from "./address.js";
-
-let closed;
+import { areCommentsAllowed } from "./post.js";
 
 const drawPostCommentsSection = (post: any, comments: any[]) => {
+  if (areCommentsAllowed(post)) {
+    const html = `
+      <div class="comments-section">
+        <h2>Comments</h2>
+        <form
+          id="post-comment-form"
+          class="submit-comment main-comment-form">
+          <textarea minlength="2" maxlength="1000" required></textarea>
+          <input type="submit" value="Comment" />
+        </form>
+        ${drawPostComments(post, comments)}
+      </div>
+    `;
+
+    return html;
+  }
+
   const html = `
     <div class="comments-section">
       <h2>Comments</h2>
-      <form
-        id="post-comment-form"
-        class="submit-comment main-comment-form">
-        <textarea minlength="2" maxlength="1000" required></textarea>
-        <input type="submit" value="Comment" />
-      </form>
-      ${drawPostComments(post, comments)}
+      <p>Comments will be opened after the voting period ends.</p>
     </div>
-  `;
+    `;
 
   return html;
 };
@@ -75,31 +84,10 @@ const drawCommentReplyBox = (commentId: number = 0) => {
   `;
 };
 
-const startComment = (post: any) => {
-  // const counter = new countdown();
-  // closed = counter.count(data.id, data.expires, false);
-  $("#post-comment-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = {
-      postId: post.id,
-      type: "comment",
-      content: (e.currentTarget as any).querySelector("textarea").value,
-    };
-    postComment(data);
-
-    // if (closed === "Closed") {
-    //   commentData.postid = post.id;
-    //   commentData.commentid = lastCommentID;
-    //   commentData.type = "comment";
-    //   commentData.comment = e.currentTarget.querySelector("textarea").value;
-    //   postComment(commentData);
-    // } else {
-    //   alert("Comments are only available when the voting period expires.");
-    // }
-  });
-};
-
 const attachListenersToCommentBoxes = (post: any) => {
+  if (!areCommentsAllowed(post)) {
+    return;
+  }
   let shownReplies = {};
   $$(".comment-box").forEach((el) => {
     el.addEventListener("click", function (event) {
@@ -122,6 +110,16 @@ const attachListenersToCommentBoxes = (post: any) => {
       });
     });
   });
+
+  $("#post-comment-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const data = {
+      postId: post.id,
+      type: "comment",
+      content: (e.currentTarget as any).querySelector("textarea").value,
+    };
+    postComment(data);
+  });
 };
 
 const postComment = async (data: any) => {
@@ -143,9 +141,19 @@ const postComment = async (data: any) => {
       console.log(error);
     });
 
+  if (result.error) {
+    // TO-DO:
+    // Promot error message to the user
+    return;
+  }
+
   if (result.postId) {
     window.location.reload();
   }
 };
 
-export { startComment, drawPostCommentsSection, attachListenersToCommentBoxes };
+export {
+  drawPostCommentsSection,
+  attachListenersToCommentBoxes,
+  areCommentsAllowed,
+};

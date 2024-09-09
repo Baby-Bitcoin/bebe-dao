@@ -1,7 +1,7 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const RedisClient = require("./redis");
-const Comment = require("./comment");
 const { ADMINS } = require("./configs");
+const PostComments = require("./post-comments");
 const fs = require("fs");
 const path = require("path");
 
@@ -71,7 +71,7 @@ module.exports = class Post {
 
     const votes =
       (await RedisClient.jsonget(RedisClient.VOTES_DB, post.id)) || [];
-    const comments = await Comment.findByPostId(post.id);
+    const comments = await PostComments.findByCommentsPostId(post.id);
 
     return { post, address, votes, comments };
   }
@@ -104,6 +104,14 @@ module.exports = class Post {
     return posts.reverse();
   }
 
+  static areCommentsAllowed(post) {
+    return !(post.type == "election" && !this.isPostClosed(post));
+  }
+
+  static isPostClosed(post) {
+    return post.expiresAt - currentUnixTimestamp() < 0;
+  }
+
   static async delete(postId, publicKey) {
     const post = await RedisClient.jsonget(RedisClient.POSTS_DB, postId);
     if (!post) {
@@ -116,7 +124,10 @@ module.exports = class Post {
       throw new Error("Not authorized to delete this post");
     }
     await RedisClient.delete(RedisClient.POSTS_DB, post.id);
-    fs.rmSync(path.join(IMAGE_PREFIX, post.imageUrl), { force: true });
+    await RedisClient.delete(RedisClient.COMMENTS_DB, post.id);
+    await RedisClient.delete(RedisClient.VOTES_DB, post.id);
+    post.imageUrl &&
+      fs.rmSync(path.join(IMAGE_PREFIX, post.imageUrl), { force: true });
   }
 
   static queryMatchesPost(query, post) {

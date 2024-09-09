@@ -3,7 +3,6 @@ import { makeChart } from "./chart.js";
 import {
   attachListenersToCommentBoxes,
   drawPostCommentsSection,
-  startComment,
 } from "./comments.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 import { currentPostsFilters } from "./search.js";
@@ -90,6 +89,10 @@ const handlePostSubmit = async () => {
 
 const isPostClosed = (post: any) => {
   return post.expiresAt - currentUnixTimestamp() < 0;
+};
+
+const areCommentsAllowed = (post: any) => {
+  return !(post.type == "election" && !isPostClosed(post));
 };
 
 const postCountdown = (post: any) => {
@@ -323,7 +326,6 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     `;
 
   $("#posts").innerHTML = htmlStr;
-  startComment(post);
   attachListenersToCommentBoxes(post);
   attachListenersToVote(post);
   attachListenersToPost(post);
@@ -489,4 +491,10 @@ document.onreadystatechange = () => {
   }
 };
 
-export { postActions, filter, loadSinglePost };
+export {
+  postActions,
+  filter,
+  loadSinglePost,
+  isPostClosed,
+  areCommentsAllowed,
+};

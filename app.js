@@ -151,9 +151,9 @@ app.delete(
   createRateLimiter(100, 15),
   banStatus,
   publicKeyIsRequired,
-  (req, res) => {
+  async (req, res) => {
     try {
-      Post.delete(req.body.id, req.session.publicKey);
+      await Post.delete(req.body.id, req.session.publicKey);
       res.status(202).send({ success: true });
     } catch (error) {
       res.status(409).send({ error: error.message });
@@ -214,7 +214,7 @@ app.post(
   createRateLimiter(100, 15),
   banStatus,
   publicKeyIsRequired,
-  (req, res) => {
+  async (req, res) => {
     const schema = Joi.object({
       postId: Joi.number().integer().max(23000).precision(0).required(),
       commentId: Joi.number().integer().max(23000).precision(0).optional(),
@@ -229,14 +229,17 @@ app.post(
       return;
     }
 
-    const comment = new Comment({
-      ...req.body,
-      walletAddress: req.session.publicKey,
-    });
+    try {
+      const comment = new Comment({
+        ...req.body,
+        walletAddress: req.session.publicKey,
+      });
+      await comment.save();
 
-    comment.save();
-
-    res.send(comment);
+      res.send(comment);
+    } catch (error) {
+      res.status(409).send({ error: error.message });
+    }
   }
 );
 
