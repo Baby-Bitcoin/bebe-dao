@@ -6,7 +6,7 @@ const Joi = require("joi"); // this is for data validation sent from front-end
 const fs = require("fs"); // this is for saving or reading files to the server
 const Post = require("./src/server/post");
 const Comment = require("./src/server/comment");
-const { Vote } = require("./src/server/vote"); // functions ?  variables
+const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
 const { env } = require("process");
 
@@ -72,7 +72,12 @@ app.get("/posts", async (req, res) => {
 
 // POST to the posts.json file
 app.post("/post", uploadPostImage.single("image"), async (req, res) => {
-  // Joi Schema = how the incoming input data is validated
+  if (!req.session.publicKey) {
+    res
+      .status(401)
+      .send({ error: "Make sure your Solana wallet is connected" });
+    return;
+  }
 
   const schema = Joi.object({
     title: Joi.string().max(124).required(),
@@ -86,11 +91,6 @@ app.post("/post", uploadPostImage.single("image"), async (req, res) => {
   });
 
   const { error } = schema.validate(req.body, () => {});
-
-  if (!req.session.publicKey) {
-    res.status(401).send("Make sure your Solana wallet is connected");
-    return;
-  }
 
   // TO-DO:
   // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
@@ -111,22 +111,33 @@ app.post("/post", uploadPostImage.single("image"), async (req, res) => {
   res.send(createdPost);
 });
 
-app.post("/vote", (req, res) => {
-  // Joi Schema = how the incoming input data is validated
-  const schema = {
-    id: Joi.number().integer().max(23000).precision(0).required(),
-    user: Joi.string().max(13).required(),
-    vote: Joi.number().integer().max(10).precision(0).required(),
-  };
+app.post("/vote", async (req, res) => {
+  if (!req.session.publicKey) {
+    res
+      .status(401)
+      .send({ error: "Make sure your Solana wallet is connected" });
+    return;
+  }
 
-  const { error } = Joi.validate(req.body, schema);
+  // Joi Schema = how the incoming input data is validated
+  const schema = Joi.object({
+    postId: Joi.number().integer().max(23000).precision(0).required(),
+    optionIndex: Joi.number().integer().required(),
+  });
+
+  const { error } = schema.validate(req.body, () => {});
 
   if (error) {
     res.status(401).send(error.details[0].message);
     return;
-  } else {
-    Vote(req.body);
-    res.send({ status: 200 });
+  }
+
+  const vote = new Vote({ ...req.body, walletAddress: req.session.publicKey });
+  try {
+    const newVotes = await vote.save();
+    res.send(newVotes);
+  } catch (error) {
+    res.status(409).send({ error: error.message });
   }
 });
 
@@ -201,6 +212,13 @@ app.post(
 );
 
 app.post("/comments", (req, res) => {
+  if (!req.session.publicKey) {
+    res
+      .status(401)
+      .send({ error: "Make sure your Solana wallet is connected" });
+    return;
+  }
+
   const schema = Joi.object({
     postId: Joi.number().integer().max(23000).precision(0).required(),
     commentId: Joi.number().integer().max(23000).precision(0).optional(),
@@ -209,11 +227,6 @@ app.post("/comments", (req, res) => {
   });
 
   const { error } = schema.validate(req.body, () => {});
-
-  if (!req.session.publicKey) {
-    res.status(401).send("Make sure your Solana wallet is connected");
-    return;
-  }
 
   if (error) {
     res.status(401).send(error.details[0].message);

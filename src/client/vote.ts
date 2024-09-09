@@ -36,9 +36,12 @@ const attachListenersToVote = async (post: any) => {
         console.log(err);
       });
 
-    if (!voteResult.firstVotedAt) {
+    if (voteResult.error) {
+      // TO-DO
+      // Prompt error message to the user
       return;
     }
+
     const snd: any = $("#vote-sound");
     snd.play();
     if (!snd.paused) {

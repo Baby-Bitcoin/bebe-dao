@@ -34,6 +34,11 @@ module.exports = class Post {
 
   async save() {
     this.data.id = await RedisClient.getNewId(RedisClient.POSTS_DB);
+
+    // TO-DO:
+    // get balanceAtPosting
+    //
+
     this.data.totalCurrentAddresses = (
       await RedisClient.getAllKeys(RedisClient.ADDRESSES_DB)
     ).length;
