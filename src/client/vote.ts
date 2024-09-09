@@ -1,6 +1,7 @@
 import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
 import { $ } from "./ui.js";
+import { makeChart } from "./chart.js";
 
 const attachListenersToVote = async (post: any) => {
   $(".vote-btn").addEventListener("click", async (event) => {
@@ -49,9 +50,7 @@ const attachListenersToVote = async (post: any) => {
       el.disabled = true;
       el.classList.remove("voted");
       el.classList.add("voted");
-
-      // TO-DO:
-      // Update vote info on the page
+      makeChart(post, voteResult);
     }
   });
 };

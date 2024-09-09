@@ -1,3 +1,4 @@
+import { makeChart } from "./chart.js";
 import {
   attachListenersToCommentBoxes,
   drawPostCommentsSection,
@@ -92,7 +93,6 @@ const isPostClosed = (post: any) => {
 };
 
 const postCountdown = (post: any) => {
-
   const divId = `post-${post.id}-countdown`;
 
   const html = `
@@ -179,7 +179,7 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post, comments }: any) => {
+const drawPostDetails = ({ post, comments, votes }: any) => {
   let actions = "";
   const publicKey = localStorage.getItem("publicKey");
   if (publicKey === post.walletAddress || ADMINS.includes(post.walletAddress)) {
@@ -328,6 +328,7 @@ const drawPostDetails = ({ post, comments }: any) => {
   startComment(post);
   attachListenersToCommentBoxes(post);
   attachListenersToVote(post);
+  makeChart(post, votes);
 };
 
 const drawPost = (post: any) => {
