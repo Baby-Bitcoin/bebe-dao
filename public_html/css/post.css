@@ -34,8 +34,8 @@
 .main-image .main-image-username {
   position: absolute;
   z-index: 1;
-  top: 10px;
-  left: 12px;
+  top: 8px;
+  left: 10px;
 }
 
 .main-image .user {

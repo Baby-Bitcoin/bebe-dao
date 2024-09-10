@@ -128,6 +128,7 @@ module.exports = class Post {
     await RedisClient.delete(RedisClient.VOTES_DB, post.id);
     post.imageUrl &&
       fs.rmSync(path.join(IMAGE_PREFIX, post.imageUrl), { force: true });
+      fs.rmSync(path.join(IMAGE_PREFIX+'/thumbnails', post.imageUrl), { force: true });
   }
 
   static queryMatchesPost(query, post) {

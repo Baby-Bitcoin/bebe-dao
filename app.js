@@ -4,6 +4,7 @@ const session = require("express-session");
 const multer = require("multer"); // we use this for storing images and other files sent from the user
 const Joi = require("joi"); // this is for data validation sent from front-end
 const fs = require("fs"); // this is for saving or reading files to the server
+const { createStorage } = require("./src/server/imageProcessing");
 const Post = require("./src/server/post");
 const Comment = require("./src/server/comment");
 const Vote = require("./src/server/vote"); // functions ?  variables
@@ -20,36 +21,22 @@ const Address = require("./src/server/address");
 
 global.admins = ["lucianape3"];
 
-// configuration for multer
-const postImagesStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const path = "./public_html/images/posts";
-    fs.mkdirSync(path, { recursive: true });
-    return cb(null, path);
-  },
-  filename: function (req, file, cb) {
-    let extArray = file.mimetype.split("/");
-    let extension = extArray[extArray.length - 1];
-    let newFileName = file.fieldname + "-" + Date.now() + "." + extension;
-    cb(null, newFileName);
-  },
-});
-const uploadPostImage = multer({ storage: postImagesStorage });
+// Define storage options for post images and address avatars
+const postStorage = createStorage(
+  "./public_html/images/posts",
+  { width: 64, height: 64 },
+  "./public_html/images/posts/thumbnails"
+);
 
-const addressAvatarsStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const path = "./public_html/images/addresses";
-    fs.mkdirSync(path, { recursive: true });
-    return cb(null, path);
-  },
-  filename: function (req, file, cb) {
-    let extArray = file.mimetype.split("/");
-    let extension = extArray[extArray.length - 1];
-    let newFileName = file.fieldname + "-" + Date.now() + "." + extension;
-    cb(null, newFileName);
-  },
-});
-const uploadAddressAvatar = multer({ storage: addressAvatarsStorage });
+const addressStorage = createStorage(
+  "./public_html/images/addresses",
+  { width: 32, height: 32 },
+  "./public_html/images/addresses/thumbnails"
+);
+
+// Define multer uploads using the storage
+const uploadPostImage = multer({ storage: postStorage });
+const uploadAddressAvatar = multer({ storage: addressStorage });
 
 const app = express();
 app.use(
@@ -84,7 +71,8 @@ app.post(
   createRateLimiter(100, 15),
   banStatus,
   publicKeyIsRequired,
-  uploadPostImage.single("image"),
+  postStorage.upload.single("image"),
+  postStorage.saveImageAndThumbnail,
   async (req, res) => {
     const schema = Joi.object({
       title: Joi.string().max(124).required(),
@@ -191,7 +179,8 @@ app.post(
   "/address-info-form",
   createRateLimiter(100, 15),
   banStatus,
-  uploadAddressAvatar.single("avatar"),
+  addressStorage.upload.single("avatar"),
+  addressStorage.saveImageAndThumbnail,
   async (req, res) => {
     const schema = Joi.object({
       address: Joi.string().max(58).required(),
@@ -206,7 +195,7 @@ app.post(
     }
 
     try {
-      const address = await addressInfo(req.body);
+      const address = await addressInfo(req.body, req.file?.filename);
       res.send(address);
     } catch (error) {
       res.status(409).send({ error: error.message });

@@ -165,12 +165,15 @@ const postFormListener = () => {
   );
 };
 
-const getPostImage = (post: any) => {
+const getPostImage = (post, useThumbnail = false) => {
   let imageSRC = "/img/love-technology.jpg";
-  if (post.imageUrl && post.imageUrl != "") {
-    imageSRC = "/images/posts/" + post.imageUrl;
+  if (post.imageUrl && post.imageUrl !== "") {
+    if (useThumbnail) {
+      imageSRC = "/images/posts/thumbnails/" + post.imageUrl;
+    } else {
+      imageSRC = "/images/posts/" + post.imageUrl;
+    }
   }
-
   return imageSRC;
 };
 
@@ -185,14 +188,14 @@ const attachListenersToAddresses = () => {
 };
 
 const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
-  let actions = "";
+  let deletePost = "";
   const publicKey = localStorage.getItem("publicKey");
   if (publicKey === post.walletAddress || ADMINS.includes(publicKey)) {
-    actions = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
+    deletePost = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
-
+  let banAddress = ""
   if (ADMINS.includes(publicKey)) {
-    actions += `
+    banAddress = `
       <button 
         id="ban-address-${post.walletAddress}"
         class="action-button ban ${address.isBanned ? "banned" : ""}"
@@ -267,7 +270,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
   const usersNeeded = Math.ceil(
     (post.quorum / 100) * post.totalCurrentAddresses
   );
-  const totalMembers = `0/${usersNeeded} users (${post.quorum}% quorum)`;
+  const totalMembers = `0/${usersNeeded} users (${post.quorum}%)`;
 
   const htmlStr = `
     <article class="post ${closedClass}" id="post-${post.id}">
@@ -287,7 +290,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
               </span>
             </div>
           </a>
-
+          ${banAddress}
           <div class="content">
             <div class="user_info flex">
               <span class="${post.type} post-type">${post.type}</span>
@@ -297,7 +300,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
               </span>
               <img class="hourglass" src="/svgs/hourglass.svg" alt="hourglass time left icon" />
               ${postCountdown(post)}
-              <span class="actions">${actions}</span>
+              <span class="actions">${deletePost}</span>
             </div>
             <h1 class="title ${post.type}">${post.title}</h1>
             <div class="description">
@@ -353,20 +356,12 @@ const attachListenersToPost = (post: any, address: any = {}) => {
   const banElement = $(`#ban-address-${post.walletAddress}`);
   if (banElement) {
     banElement.addEventListener("click", () => {
-      toggleBanAddress(post.walletAddress, address.isBanned ? "unban" : "ban");
+      toggleBanAddress(post.walletAddress, address.isBanned);
     });
   }
 };
 
 const deletePost = async (post: any) => {
-  const promptString = prompt(
-    "Are you sure you want to delete this post?",
-    "YES"
-  );
-
-  if (promptString != "YES") {
-    return;
-  }
 
   const result = await fetch("delete-post", {
     method: "DELETE",
@@ -422,7 +417,7 @@ const drawPost = (post: any) => {
     closedStatus = "";
   }
 
-  const imageSRC = getPostImage(post);
+  const imageSRC = getPostImage(post, true);
 
   const htmlStr = `
     <article class="post ${post.type} ${closedStatus}" id="post-${post.id}">

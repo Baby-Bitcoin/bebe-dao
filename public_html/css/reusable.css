@@ -41,3 +41,11 @@
 .lh16 {
     line-height: 1.6;
 }
+
+.f200 {
+    font-size: 200%;
+}
+
+.white {
+    color: white
+}

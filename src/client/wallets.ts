@@ -113,7 +113,7 @@ const connectToWallet = async (walletName: string) => {
   if (!wallet.adapter) {
     if (!wallet.extensionUrl) {
       showModal(
-        `<h1>There is no ${browserType()} extension for ${walletName}<h1>`
+        `<div class="overlayMessage">There is no ${browserType()} extension for ${walletName}.<div>`
       );
       return;
     }
@@ -125,6 +125,7 @@ const connectToWallet = async (walletName: string) => {
   if (connected) {
     closeModal();
     const avatarName = $("#avatar-name");
+    $("#login span").textContent = 'Switch Wallet'
     $("#logout").classList.remove("hide");
     $("#account").classList.remove("hide");
     $("#add").style.display = "block"; // on submit for Post we need to check min balance
@@ -174,7 +175,7 @@ const updateAvatarSrcAndUserName = (
   const avatarElements = $$(".userAvatar") as NodeListOf<HTMLImageElement>;
 
   const source = avatarSrc
-    ? `/images/addresses/${avatarSrc}`
+    ? `/images/addresses/thumbnails/${avatarSrc}`
     : "/svgs/user.svg";
   avatarElements.forEach((img) => {
     img.src = source;
@@ -215,8 +216,8 @@ const buildWalletsUI = () => {
   }
 
   const footer = `
-    <p style="color: white">
-      We encourage using Chrome or Firefox browsers for better wallet support.
+  <p class="white">
+      <b class="f200">(ℹ)</b><br />For PC/Laptop, we encourage using Chrome or Firefox browsers for better wallet support.
       </br>
       WalletConnect is not supported at the moment.
   </p>`;

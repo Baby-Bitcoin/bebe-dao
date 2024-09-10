@@ -36,6 +36,7 @@ const addressInfo = async function (data, avatarUrl = null) {
     const oldAvatarUrl = address.avatarUrl;
     if (oldAvatarUrl) {
       fs.rmSync(path.join(AVATAR_PREFIX, oldAvatarUrl), { force: true });
+      fs.rmSync(path.join(AVATAR_PREFIX+'/thumbnails', oldAvatarUrl), { force: true });
     }
     address.avatarUrl = avatarUrl;
   }

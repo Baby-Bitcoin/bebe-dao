@@ -325,8 +325,7 @@ code:before {
   text-align: left;
   white-space: nowrap;
   text-decoration: none;
-  font-weight: bold;
-  line-height: 62px;
+  line-height: 1;
   text-transform: capitalize;
   color: var(--main-color-dark);
   font-family: "Roboto", Helvetica, Arial, sans-serif;
@@ -340,6 +339,11 @@ code:before {
   height: 42px;
   background: var(--logo);
   background-size: 100%;
+}
+
+.logo span {line-height: 1.2 !important; margin-top: 20px; display: inline-block;}
+.logo span b {
+  font-size: 18px; font-family: 'Dosis', Arial, sans-serif;
 }
 
 .hamburger,
@@ -809,6 +813,7 @@ footer img {
 
 .post {
   width: 100%;
+  position: relative;
   margin-bottom: 10px;
   display: flex;
   align-content: center;
@@ -1072,6 +1077,7 @@ footer img {
   margin: 0 6px 0 0;
   text-decoration: none;
   display: inline-block;
+  color: var(--second-contrast)
 }
 
 .tag:hover {
@@ -1091,12 +1097,22 @@ footer img {
 
 .post .ban,
 .post .delete {
+  width: 23px;
+  height: 23px;
   background: url(/svgs/trash.svg) no-repeat 50% 50%;
   background-size: 23px 23px;
 }
 
 .post .ban {
+  width: 32px;
+  height: 32px;
   background: url(/svgs/ban.svg) no-repeat 50% 50%;
+  background-size: 32px 32px;
+  position: absolute;
+  left: 182px;
+  top: 10px;
+  pointer-events: all !important;
+  z-index: 1;
 }
 
 
@@ -1137,7 +1153,7 @@ footer img {
 .calendar {
   width: 18px;
   height: 18px;
-  margin: 0 3px 0 12px;
+  margin: 0 3px 0 6px;
 }
 
 .hourglass {
@@ -1393,6 +1409,12 @@ canvas {
     width: 100% !important;
   }
 
+  .post .ban {
+    top: 12px;
+    left: auto;
+    right: 10px
+  }
+
   .postPage .content {
     padding: 10px 0 0 0 !important;
   }
@@ -1528,6 +1550,10 @@ canvas {
   margin-top: 10px;
   text-align: center;
   color: var(--white);
+}
+
+.myChart {
+  z-index: 1;
 }
 
 @keyframes loader {

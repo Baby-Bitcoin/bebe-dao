@@ -1,6 +1,6 @@
 {
   "name": "bebe-dao",
-  "version": "1.0.0",
+  "version": "0.1",
   "description": "BEBE DAO",
   "main": "app.js",
   "scripts": {
@@ -9,7 +9,6 @@
     "start-server": "node app.js",
     "svgo": "npx svgo --multipass public_html/svgs/trust.svg",
     "tsc-watch": "tsc --watch --project tsconfig.json",
-    "redis-docker": "docker run -p 6378:6379 --name redis-stack redis/redis-stack:latest",
     "redis-rejson": "docker run -p 6379:6379 --name redis-rejson redislabs/rejson:latest"
   },
   "author": "@dyablohunter, @terfender",

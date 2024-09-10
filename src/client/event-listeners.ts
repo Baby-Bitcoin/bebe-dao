@@ -13,7 +13,7 @@ export const addBTN = () => {
     const balance = await bebeTokenBalance();
     if (balance < MINI_TOKEN_BALANCE_FOR_POST) {
       const html = `
-        <div>You need at least ${MINI_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to post</div>
+        <div class="overlayMessage">You need at least ${MINI_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to post.</div>
       `;
       showModal(html);
       return;

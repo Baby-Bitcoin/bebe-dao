@@ -12,21 +12,13 @@ const getAddressAvatar = (address: any) => {
 const getAddressAvatarPostDefault = (address: any) => {
   let url = "/img/love-technology.jpg";
   if (address.avatarUrl && address.avatarUrl != "") {
-    url = "/images/addresses/" + address.avatarUrl;
+    url = "/images/addresses/thumbnails/" + address.avatarUrl;
   }
 
   return url;
 };
 
-const toggleBanAddress = async (walletAddress: string, msg = "ban") => {
-  const promptString = prompt(
-    `Are you sure you want to ${msg} this address?`,
-    "YES"
-  );
-
-  if (promptString != "YES") {
-    return;
-  }
+const toggleBanAddress = async (walletAddress, isBanned = false) => {
 
   const result = await fetch("toggle-address-ban", {
     method: "POST",
@@ -42,13 +34,11 @@ const toggleBanAddress = async (walletAddress: string, msg = "ban") => {
     });
 
   if (result.error) {
-    // TO-DO
-    // Prompt error message to the user
     return;
   }
 
   $(".shortMessage").innerHTML = `
-    <div class="quickText"><h2 style="color: red">
+    <div class="quickText"><h2 style="color: ${result.isBanned ? "red" : "green"}">
       USER ${result.isBanned ? "BANNED" : "UNBANNED"}
     </h2></div>
   `;
