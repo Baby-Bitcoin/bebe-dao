@@ -19,8 +19,6 @@ const {
 const { ADMINS } = require("./src/server/configs");
 const Address = require("./src/server/address");
 
-global.admins = ["lucianape3"];
-
 // Define storage options for post images and address avatars
 const postStorage = createStorage(
   "./public_html/images/posts",
