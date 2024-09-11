@@ -41,7 +41,6 @@ app.use(
     cookie: { secure: false }, // Set to true if using HTTPS
   })
 );
-// app.use(createRateLimiter(100, 15));
 
 // express.json to decifer json data from incoming requests
 app.use(express.json());
