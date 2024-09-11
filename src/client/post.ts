@@ -76,6 +76,8 @@ const handlePostSubmit = async () => {
       }).then((response) => response.json());
 
       if (post.id) {
+        alert('Database gets deleted every 15 minutes or so. So keeep posting!');
+
         $("#post-form-container").style.display = "";
         $("body").style.overflow = "";
         $(".shortMessage").innerHTML =
@@ -315,7 +317,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
               </div>
               <div>
                 <b>VOTING OPTIONS:</b>
-                <span>${pollHTML}</span>
+                <form id="postVotingOptions">${pollHTML}</form>
               </div>
             </div>
             ${drawPostCommentsSection(post, comments)}

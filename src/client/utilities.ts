@@ -100,7 +100,14 @@ const countdown = (seconds: number, divId: string) => {
   };
 
   const intervalId = setInterval(() => {
-    $(divId).innerHTML = formatTime(seconds);
+    const element = $(divId);
+    if (!element) {
+      clearInterval(intervalId);
+      console.error(`Element with ID ${divId} not found`);
+      //$("#posts").innerHTML = '(ℹ) No posts in this category.'
+      return;
+    }
+    element.innerHTML = formatTime(seconds);
     if (seconds <= 0) clearInterval(intervalId);
     seconds--;
   }, 1000);

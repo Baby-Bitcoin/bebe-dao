@@ -1,6 +1,6 @@
 import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
-import { $ } from "./ui.js";
+import { $, $$ } from "./ui.js";
 import { makeChart } from "./chart.js";
 
 const attachListenersToVote = async (post: any) => {
@@ -44,6 +44,10 @@ const attachListenersToVote = async (post: any) => {
     }
     let currentVotes = $('#total-users b').textContent;
     $('#total-users b').textContent = `${Number(currentVotes) + 1}`;
+    const votingOptions = $$('#postVotingOptions input')  as NodeListOf<HTMLInputElement>;
+    votingOptions.forEach((radio) => {
+      radio.disabled = true;
+    });
 
     const snd: any = $("#vote-sound");
     snd.play();
