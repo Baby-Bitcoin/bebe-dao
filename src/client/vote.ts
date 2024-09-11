@@ -42,6 +42,8 @@ const attachListenersToVote = async (post: any) => {
       // Prompt error message to the user
       return;
     }
+    let currentVotes = $('#total-users b').textContent;
+    $('#total-users b').textContent = `${Number(currentVotes) + 1}`;
 
     const snd: any = $("#vote-sound");
     snd.play();

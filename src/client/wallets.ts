@@ -174,11 +174,16 @@ const updateAvatarSrcAndUserName = (
 
   const avatarElements = $$(".userAvatar") as NodeListOf<HTMLImageElement>;
 
+
   const source = avatarSrc
     ? `/images/addresses/thumbnails/${avatarSrc}`
     : "/svgs/user.svg";
+
   avatarElements.forEach((img) => {
-    img.src = source;
+    // special case for profile section avatar
+    if (avatarSrc && img.classList.contains('camera')) {
+      img.src = `/images/addresses/${avatarSrc}`
+    } else {img.src = source;}
   });
 };
 

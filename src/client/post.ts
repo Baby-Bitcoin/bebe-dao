@@ -193,7 +193,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
   if (publicKey === post.walletAddress || ADMINS.includes(publicKey)) {
     deletePost = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
-  let banAddress = ""
+  let banAddress = "";
   if (ADMINS.includes(publicKey)) {
     banAddress = `
       <button 
@@ -234,6 +234,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     votingDisabled = "disabled";
     deleteBtnTitle = 'title="You voted already."';
   } else {
+    votingDisabled = "";
     checked = "";
     disabledColor = "";
     deleteBtnTitle = 'title="Hit the BEBE to cast your vote."';
@@ -270,7 +271,10 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
   const usersNeeded = Math.ceil(
     (post.quorum / 100) * post.totalCurrentAddresses
   );
-  const totalMembers = `0/${usersNeeded} users (${post.quorum}%)`;
+
+  const totalMembers = `<b>${votes.voters?.length || 0}</b>/${usersNeeded} users (${
+    post.quorum
+  }%)`;
 
   const htmlStr = `
     <article class="post ${closedClass}" id="post-${post.id}">
@@ -362,8 +366,16 @@ const attachListenersToPost = (post: any, address: any = {}) => {
 };
 
 const deletePost = async (post: any) => {
+  const promptString = prompt(
+    "Are you sure you want to delete this post?",
+    "YES"
+  );
 
-  const result = await fetch("delete-post", {
+  if (promptString != "YES") {
+    return;
+  }
+
+  const result = await fetch("/delete-post", {
     method: "DELETE",
     headers: {
       Accept: "application/json",
@@ -376,11 +388,11 @@ const deletePost = async (post: any) => {
       console.log(err);
     });
 
-  if (result.error) {
-    // TO-DO
-    // Prompt error message to the user
-    return;
-  }
+  // if (result.error) {
+  //   // TO-DO
+  //   // Prompt error message to the user
+  //   return;
+  // }
 
   $(".shortMessage").innerHTML =
     '<div class="quickText"><h2 style="color: red">POST DELETED</h2></div>';
@@ -428,8 +440,8 @@ const drawPost = (post: any) => {
             <div class="title ${post.type}"><h2>${post.title}</h2></div>
             <div class="user_info flex">
               <span class="index-user ${post.type}" data-address="${
-                post.walletAddress
-              }">@${post.username}</span>
+    post.walletAddress
+  }">@${post.username}</span>
               <img class="calendar" src="/svgs/calendar.svg" alt="calendar date posted icon" />
               <span class="date" title="Date posted">${formatDate(
                 post.createdAt * 1000
@@ -463,7 +475,7 @@ const postActions = async (filters: any = {}) => {
     history.pushState({}, null, `/?${params.join("&")}`);
   }
 
-  const posts = await fetch(`posts?${params.join("&")}`).then((response) =>
+  const posts = await fetch(`/posts?${params.join("&")}`).then((response) =>
     response.json()
   );
 
@@ -484,14 +496,33 @@ const postActions = async (filters: any = {}) => {
 };
 
 const loadSinglePost = async (postId: number) => {
-  const data = await fetch(`/posts/${postId}`).then((response) =>
-    response.json()
-  );
+  try {
+    const response = await fetch(`/posts/${postId}`);
+    $("#loader").style.setProperty("display", "none");
+    if (!response.ok) {
+      // Handle non-200 responses
+      console.error(`Failed to load post: ${response.status}`);
+      $("#posts").innerHTML = "Post not found.";
+      return;
+    }
 
-  globalPost = data;
-  drawPostDetails(data);
+    const data = await response.json();
 
-  $("#loader").style.setProperty("display", "none");
+    if (!data) {
+      console.error("Post data is undefined or null");
+      $("#posts").innerHTML = "Post not found.";
+      return;
+    }
+
+    globalPost = data;
+    drawPostDetails(data);
+
+    $("#loader").style.setProperty("display", "none");
+  } catch (error) {
+    console.error("An error occurred while loading the post:", error);
+    $("#posts").innerHTML = "An error occurred. Please try again later.";
+    $("#loader").style.setProperty("display", "none");
+  }
 };
 
 let initialized: boolean = false;
