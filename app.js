@@ -32,10 +32,6 @@ const addressStorage = createStorage(
   "./public_html/images/addresses/thumbnails"
 );
 
-// Define multer uploads using the storage
-const uploadPostImage = multer({ storage: postStorage });
-const uploadAddressAvatar = multer({ storage: addressStorage });
-
 const app = express();
 app.use(
   session({
