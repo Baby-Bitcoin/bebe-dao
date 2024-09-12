@@ -76,7 +76,6 @@ const handlePostSubmit = async () => {
       }).then((response) => response.json());
 
       if (post.id) {
-        alert('Database gets deleted every 15 minutes or so. So keeep posting!');
 
         $("#post-form-container").style.display = "";
         $("body").style.overflow = "";

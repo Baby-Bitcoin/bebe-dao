@@ -6,6 +6,7 @@
     "outDir": "public_html/dist",
     // "outFile": "./public_html/dist/build.js",
     // "module": "ESNext",
+    "moduleResolution": "node",
     "allowJs": false,
     "sourceMap": true,
     "baseUrl": ".",
