@@ -1,6 +1,7 @@
-import { showModal } from "./modal.js";
-import { buildWalletsUI } from "./wallets.js";
 import { $, $$ } from "./ui.js";
+import { showModal } from "./modal.js";
+import { bebeTokenBalance, buildWalletsUI } from "./wallets.js";
+import { BEBE_SYMBOL, MINI_TOKEN_BALANCE_FOR_POST } from "./config.js";
 import { makeChart } from "./chart.js";
 
 const attachListenersToVote = async (post: any) => {
@@ -14,8 +15,19 @@ const attachListenersToVote = async (post: any) => {
       $('input[name="post-' + post.id + '-options"]:checked') || null;
 
     if (!checkedRadio) {
-      // TO-DO:
-      // prompt to the user that he needs to select an option
+      const html = `
+        <div class="overlayMessage">You need to select an option.</div>
+      `;
+      showModal(html);
+      return;
+    }
+
+    const balance = await bebeTokenBalance();
+    if (balance < MINI_TOKEN_BALANCE_FOR_POST) {
+      const html = `
+        <div class="overlayMessage">You need at least ${MINI_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to vote.</div>
+      `;
+      showModal(html);
       return;
     }
 
@@ -38,8 +50,10 @@ const attachListenersToVote = async (post: any) => {
       });
 
     if (voteResult.error) {
-      // TO-DO
-      // Prompt error message to the user
+      const html = `
+        <div class="overlayMessage">The following error occurred:<br>${voteResult.error}</div>
+      `;
+      showModal(html);
       return;
     }
     let currentVotes = $('#total-users b').textContent;

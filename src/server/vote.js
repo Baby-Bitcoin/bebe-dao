@@ -1,7 +1,8 @@
 const RedisClient = require("./redis");
 const { currentUnixTimestamp } = require("./utilities");
 
-module.exports = class Comment {
+module.exports = class Vote {
+  
   constructor(voteData) {
     this.postId = voteData.postId;
     this.optionIndex = voteData.optionIndex;

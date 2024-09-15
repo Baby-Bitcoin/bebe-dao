@@ -1,7 +1,7 @@
 const path = require("path");
 const express = require("express");
 const session = require("express-session");
-const multer = require("multer"); // we use this for storing images and other files sent from the user
+
 const Joi = require("joi"); // this is for data validation sent from front-end
 const fs = require("fs"); // this is for saving or reading files to the server
 const { createStorage } = require("./src/server/imageProcessing");
