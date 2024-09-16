@@ -1,8 +1,7 @@
 import { $, $$ } from "./ui.js";
 import { showModal } from "./modal.js";
-import { buildWalletsUI } from "./wallets.js";
+import { buildWalletsUI, getAddressInfo } from "./wallets.js";
 import { BEBE_SYMBOL, MIN_TOKEN_BALANCE_FOR_POST } from "./config.js";
-import { getTokenBalance } from "./web3.js";
 import { makeChart } from "./chart.js";
 
 const attachListenersToVote = async (post: any) => {
@@ -23,9 +22,8 @@ const attachListenersToVote = async (post: any) => {
       return;
     }
 
-    const balance = await getTokenBalance(localStorage.getItem("publicKey"));
-    console.log(balance);
-    if (balance < MIN_TOKEN_BALANCE_FOR_POST) {
+    const result = (await getAddressInfo(localStorage.getItem("publicKey"))) || { balance: 0, username: '', address: '', avatarUrl: '' };
+    if (result.balance < MIN_TOKEN_BALANCE_FOR_POST) {
       const html = `
         <div class="overlayMessage">You need at least ${MIN_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to vote.</div>
       `;

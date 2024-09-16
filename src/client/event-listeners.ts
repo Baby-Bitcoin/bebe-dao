@@ -1,8 +1,7 @@
 import { BEBE_SYMBOL, MIN_TOKEN_BALANCE_FOR_POST } from "./config.js";
 import { showModal } from "./modal.js";
 import { $, $$ } from "./ui.js";
-import { buildWalletsUI } from "./wallets.js";
-import { getTokenBalance } from "./web3.js";
+import { buildWalletsUI, getAddressInfo } from "./wallets.js";
 
 export const addBTN =  async () => {
   $("#add").addEventListener("click", async (event) => {
@@ -11,8 +10,8 @@ export const addBTN =  async () => {
       return;
     }
 
-    const balance = await getTokenBalance(localStorage.getItem("publicKey")) || 0;
-    if (balance < MIN_TOKEN_BALANCE_FOR_POST) {
+    const result = (await getAddressInfo(localStorage.getItem("publicKey"))) || { balance: 0, username: '', address: '', avatarUrl: '' };
+    if (result.balance < MIN_TOKEN_BALANCE_FOR_POST) {
       const html = `
         <div class="overlayMessage">You need at least ${MIN_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to post.</div>
       `;

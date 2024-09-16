@@ -1,7 +1,6 @@
 import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
 import { browserType, prettifyNumber } from "./utilities.js";
-import { getTokenBalance } from "./web3.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
@@ -100,6 +99,29 @@ const disconnectWallet = async (walletName: string = "") => {
   }
 };
 
+const getAddressInfo = async (address: string) => {
+  const body: any = JSON.stringify({
+    address: address,
+  });
+
+  return await fetch("/address-info", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      return data; // Ensure that data is returned
+    })
+    .catch((error) => {
+      console.error("Error fetching address info:", error);
+      return null; // Return null or an empty object in case of an error
+    });
+};
+
 const connectToWallet = async (walletName: string) => {
     const wallet = getAllAvailableWallets().filter(
       (wallet: any) => wallet.name == walletName
@@ -132,28 +154,16 @@ const connectToWallet = async (walletName: string) => {
       avatarName.innerHTML = publicKey;
       localStorage.setItem("publicKey", publicKey);
       localStorage.setItem("connectedWallet", walletName);
-      const body: any = JSON.stringify({
-        address: publicKey
-      });
-      await fetch("/address-info", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body,
-      })
-        .then((response) => {
-          return response.json();
-        })
-        .then((data) => {
-          // localStorage.setItem("username", data.username);
-          // localStorage.setItem("avatar", data.username);
 
-          // still need to handle local storage to save on requests ^^^^
+      const result = (await getAddressInfo(publicKey)) || { balance: 0, username: '', address: '', avatarUrl: '' };
 
-          updateAvatarSrcAndUserName(data.username, data.address, data.avatarUrl);
-        });
+      // Update balance UI
+      const balanceTag = $("#balance>b");
+      if (balanceTag) {
+        balanceTag.innerHTML = `${prettifyNumber(result.balance)} BEBE`;
+      }
+
+      updateAvatarSrcAndUserName(result.username, result.address, result.avatarUrl);
     }
 };
 
@@ -227,16 +237,6 @@ const buildWalletsUI = () => {
   return `${ui.join("")} ${footer}`;
 };
 
-const refreshTokenBalance = async () => {
-  let balance = await getTokenBalance(localStorage.getItem("publicKey")) || 0;
-
-  const balanceTag = $("#balance>b");
-
-  if (balanceTag) {
-    balanceTag.innerHTML = `${prettifyNumber(balance)} BEBE`;
-  }
-};
-
 const handleProfileHeader = () => {
   $("#account").addEventListener("click", (e) => {
     ($("#profile") as any).style = "display: block !important";
@@ -261,7 +261,6 @@ const handleProfileHeader = () => {
 
 const startup = () => {
   checkSession();
-  refreshTokenBalance();
   handleProfileHeader();
 
   const loginButton = $("#login");
@@ -316,6 +315,7 @@ globalThis.connectToWallet = connectToWallet;
 export {
   connectToWallet,
   disconnectWallet,
+  getAddressInfo,
   getAllAvailableWallets,
   buildWalletsUI,
 };

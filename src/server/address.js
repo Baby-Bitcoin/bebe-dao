@@ -3,6 +3,7 @@ const fs = require("fs");
 const { currentUnixTimestamp } = require("./utilities");
 const { FORBIDDEN_USERNAMES } = require("./configs");
 const path = require("path");
+const { getTokenBalance } = require("./web3");
 
 const AVATAR_PREFIX = path.join(
   __dirname,
@@ -70,12 +71,14 @@ const addressInfo = async function (data, avatarUrl = null) {
     await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, keyObject);
   }
 
+  const balance = await getTokenBalance(data.address);
+
   return {
     ...keyObject,
-    address: data.address
+    address: data.address,
+    balance: balance
   };
 };
-
 
 module.exports = class Address {
   static async find(publicKey) {
