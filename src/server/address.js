@@ -1,7 +1,8 @@
-const RedisClient = require("./redis.js");
+const { InMemoryDB, dbConnection } = require('./butterfly');
+// const { getTokenBalance } = require('./js/web3');
 const fs = require("fs");
-const { currentUnixTimestamp } = require("./utilities.js");
-const { FORBIDDEN_USERNAMES } = require("./configs.js");
+const { currentUnixTimestamp } = require("./utilities");
+const { FORBIDDEN_USERNAMES } = require("./configs");
 const path = require("path");
 
 const AVATAR_PREFIX = path.join(
@@ -14,22 +15,46 @@ const AVATAR_PREFIX = path.join(
 );
 
 const addressInfo = async function (data, avatarUrl = null) {
+//console.log(await getTokenBalance(data.address));
   if (FORBIDDEN_USERNAMES.includes(data.username)) {
     throw new Error(`Not allowed to use ${data.username} as username`);
   }
 
-  let address = await RedisClient.jsonget(
-    RedisClient.ADDRESSES_DB,
+  let address = await dbConnection.getKey(
+    InMemoryDB.ADDRESSES_DB,
     data.address
   );
 
   // Initialize address if it does not exist
-  if (!address) {
-    address = {
-      ...data,
-      registeredAt: currentUnixTimestamp(),
-    };
+  const Authenticate = async () => {
+    if (!address) {
+      console.log('Register');
+      address = {
+        ...data,
+        registeredAt: currentUnixTimestamp(),
+        lastSessionAt: currentUnixTimestamp()
+      };
+
+      delete address.address; // Remove the `address` key before saving
+      delete address.login;
+      await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, address);
+    }
+
+    else if (data.login && data.login === 'yes') {
+      console.log('Login');
+      address = {
+        lastSessionAt: currentUnixTimestamp()
+      };
+
+      delete address.address; // Remove the `address` key before saving
+      delete address.login;
+      await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, address);
+    }
   }
+
+  Authenticate();
+
+
 
   // Handle avatarUrl update and remove the old avatar file if it exists
   if (avatarUrl) {
@@ -41,38 +66,26 @@ const addressInfo = async function (data, avatarUrl = null) {
     address.avatarUrl = avatarUrl;
   }
 
-  // Update address details
-  address = {
-    ...address,
-    ...data,
-    lastSessionAt: currentUnixTimestamp(),
-  };
 
   // Remove the `banned` property if it exists and is set to false
   if (address.banned === false) {
     delete address.banned;
   }
 
-  delete address.address; // Remove the `address` key before saving
-  await RedisClient.jsonset(RedisClient.ADDRESSES_DB, data.address, address);
-
-  // Retrieve and return the updated address information
-  const result = await RedisClient.jsonget(
-    RedisClient.ADDRESSES_DB,
+  const result = await dbConnection.getKey(
+    InMemoryDB.ADDRESSES_DB,
     data.address
   );
 
   return {
     ...result,
-    address: data.address,
-    // Uncomment if avatar URL should be included in the result
-    // avatarPublicUrl: result.avatarUrl ? `${AVATAR_PUBLIC_URL}/${result.avatarUrl}` : null,
+    address: data.address
   };
 };
 
 module.exports = class Address {
   static async find(publicKey) {
-    return RedisClient.jsonget(RedisClient.ADDRESSES_DB, publicKey);
+    return dbConnection.getKey(InMemoryDB.ADDRESSES_DB, publicKey);
   }
 
   static async isBanned(publicKey) {
@@ -98,8 +111,8 @@ module.exports = class Address {
 
     address.isBanned = !address.isBanned;
 
-    await RedisClient.jsonset(RedisClient.ADDRESSES_DB, publicKey, address);
-    return RedisClient.jsonget(RedisClient.ADDRESSES_DB, publicKey, address);
+    await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, publicKey, address);
+    return dbConnection.getKey(InMemoryDB.ADDRESSES_DB, publicKey, address);
   }
 };
 

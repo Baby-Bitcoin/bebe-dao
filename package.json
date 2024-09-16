@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js --ignore data/",
     "start-server": "node app.js",
+    "build": "tsc -p tsconfig.client.json && tsc -p tsconfig.server.json",
+    "watch": "concurrently \"tsc -w -p tsconfig.clieent.json\" \"tsc -w -p tsconfig.server.json\"",
     "svgo": "npx svgo --multipass public_html/svgs/trust.svg",
     "tsc-watch": "tsc --watch --project tsconfig.json",
     "redis-rejson": "docker run -p 6379:6379 --name redis-rejson redislabs/rejson:latest"
@@ -15,6 +17,7 @@
   "license": "GPL 3.0",
   "devDependencies": {
     "@types/node": "20.0.0",
+    "concurrently": "^9.0.1",
     "nodemon": "^3.1.4",
     "user-agent-data-types": "^0.4.2"
   },
@@ -24,6 +27,7 @@
     ]
   },
   "dependencies": {
+    "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

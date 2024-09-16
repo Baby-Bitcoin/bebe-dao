@@ -1,19 +1,20 @@
-import { BEBE_SYMBOL, MINI_TOKEN_BALANCE_FOR_POST } from "./config.js";
+import { BEBE_SYMBOL, MIN_TOKEN_BALANCE_FOR_POST } from "./config.js";
 import { showModal } from "./modal.js";
 import { $, $$ } from "./ui.js";
-import { bebeTokenBalance, buildWalletsUI } from "./wallets.js";
+import { buildWalletsUI } from "./wallets.js";
+import { getTokenBalance } from "./web3.js";
 
-export const addBTN = () => {
+export const addBTN =  async () => {
   $("#add").addEventListener("click", async (event) => {
     if (!localStorage.getItem("publicKey")) {
       showModal(buildWalletsUI());
       return;
     }
 
-    const balance = await bebeTokenBalance();
-    if (balance < MINI_TOKEN_BALANCE_FOR_POST) {
+    const balance = await getTokenBalance(localStorage.getItem("publicKey")) || 0;
+    if (balance < MIN_TOKEN_BALANCE_FOR_POST) {
       const html = `
-        <div class="overlayMessage">You need at least ${MINI_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to post.</div>
+        <div class="overlayMessage">You need at least ${MIN_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to post.</div>
       `;
       showModal(html);
       return;

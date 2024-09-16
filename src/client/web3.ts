@@ -85,13 +85,16 @@ const programAccounts = async (
   }
 };
 
-const getTokenBalance = async (walletAdress: string, tokenAddress: string) => {
-  const accounts = await programAccounts(walletAdress);
-  const mintAccount = accounts.filter(
-    (account) => mintFromAccount(account) == BEBE_MINT_ADDRESS
-  )[0];
-
-  return uiAmountFromAccount(mintAccount);
+const getTokenBalance = async (walletAdress: string) => {
+  try {
+    const accounts = await programAccounts(walletAdress);
+    const mintAccount = accounts.filter(
+      (account) => mintFromAccount(account) == BEBE_MINT_ADDRESS
+    )[0];
+    return uiAmountFromAccount(mintAccount);
+  } catch (error) {
+    return 0;
+  }
 };
 
 export { connection, getTokenBalance };

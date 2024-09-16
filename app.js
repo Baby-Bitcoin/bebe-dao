@@ -1,9 +1,7 @@
 const path = require("path");
 const express = require("express");
 const session = require("express-session");
-
 const Joi = require("joi"); // this is for data validation sent from front-end
-const fs = require("fs"); // this is for saving or reading files to the server
 const { createStorage } = require("./src/server/imageProcessing");
 const Post = require("./src/server/post");
 const Comment = require("./src/server/comment");
@@ -81,7 +79,7 @@ app.post(
     const { error } = schema.validate(req.body, () => {});
 
     // TO-DO:
-    // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
+    // Make sure wallet has at least $MIN_TOKEN_BALANCE_FOR_POST to post
 
     if (error) {
       res.status(401).send(error.details[0].message);
@@ -150,6 +148,7 @@ app.delete(
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
     address: Joi.string().max(58).required(),
+    login: Joi.string().max(3)
   });
 
   const { error } = schema.validate(req.body, () => {});

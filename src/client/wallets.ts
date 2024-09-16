@@ -2,7 +2,6 @@ import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
 import { browserType, prettifyNumber } from "./utilities.js";
 import { getTokenBalance } from "./web3.js";
-import { BEBE_MINT_ADDRESS } from "./config.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
@@ -102,61 +101,61 @@ const disconnectWallet = async (walletName: string = "") => {
 };
 
 const connectToWallet = async (walletName: string) => {
-  const wallet = getAllAvailableWallets().filter(
-    (wallet: any) => wallet.name == walletName
-  )[0];
+    const wallet = getAllAvailableWallets().filter(
+      (wallet: any) => wallet.name == walletName
+    )[0];
 
-  if (!wallet) {
-    return;
-  }
-
-  if (!wallet.adapter) {
-    if (!wallet.extensionUrl) {
-      showModal(
-        `<div class="overlayMessage">There is no ${browserType()} extension for ${walletName}.<div>`
-      );
+    if (!wallet) {
       return;
     }
-    globalThis.open(wallet.extensionUrl, "_blank").focus();
-    return;
-  }
 
-  const connected = await wallet.adapter.connect();
-  if (connected) {
-    closeModal();
-    const avatarName = $("#avatar-name");
-    $("#login span").textContent = 'Switch Wallet'
-    $("#logout").classList.remove("hide");
-    $("#account").classList.remove("hide");
-    $("#add").style.display = "block"; // on submit for Post we need to check min balance
-    const publicKey = wallet.adapter.publicKey.toBase58();
-    avatarName.innerHTML = publicKey;
-    localStorage.setItem("publicKey", publicKey);
-    localStorage.setItem("connectedWallet", walletName);
-    const body: any = JSON.stringify({
-      address: publicKey,
-    });
-    refreshTokenBalance();
-    await fetch("/address-info", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body,
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        // localStorage.setItem("username", data.username);
-        // localStorage.setItem("avatar", data.username);
+    if (!wallet.adapter) {
+      if (!wallet.extensionUrl) {
+        showModal(
+          `<div class="overlayMessage">There is no ${browserType()} extension for ${walletName}.<div>`
+        );
+        return;
+      }
+      globalThis.open(wallet.extensionUrl, "_blank").focus();
+      return;
+    }
 
-        // still need to handle local storage to save on requests ^^^^
-
-        updateAvatarSrcAndUserName(data.username, data.address, data.avatarUrl);
+    const connected = await wallet.adapter.connect();
+    if (connected) {
+      closeModal();
+      const avatarName = $("#avatar-name");
+      $("#login span").textContent = 'Switch Wallet'
+      $("#logout").classList.remove("hide");
+      $("#account").classList.remove("hide");
+      $("#add").style.display = "block"; // on submit for Post we need to check min balance
+      const publicKey = wallet.adapter.publicKey.toBase58();
+      avatarName.innerHTML = publicKey;
+      localStorage.setItem("publicKey", publicKey);
+      localStorage.setItem("connectedWallet", walletName);
+      const body: any = JSON.stringify({
+        address: publicKey,
+        login: "yes"
       });
-  }
+      await fetch("/address-info", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body,
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          // localStorage.setItem("username", data.username);
+          // localStorage.setItem("avatar", data.username);
+
+          // still need to handle local storage to save on requests ^^^^
+
+          updateAvatarSrcAndUserName(data.username, data.address, data.avatarUrl);
+        });
+    }
 };
 
 const updateAvatarSrcAndUserName = (
@@ -229,22 +228,8 @@ const buildWalletsUI = () => {
   return `${ui.join("")} ${footer}`;
 };
 
-const bebeTokenBalance = async () => {
-  try {
-    return await getTokenBalance(
-      localStorage.getItem("publicKey"),
-      BEBE_MINT_ADDRESS
-    );
-  } catch (error) {
-    return 0;
-  }
-};
-
 const refreshTokenBalance = async () => {
-  let balance = 0;
-  if (localStorage.getItem("publicKey")) {
-    balance = await bebeTokenBalance();
-  }
+  let balance = await getTokenBalance(localStorage.getItem("publicKey")) || 0;
 
   const balanceTag = $("#balance>b");
 
@@ -333,6 +318,5 @@ export {
   connectToWallet,
   disconnectWallet,
   getAllAvailableWallets,
-  bebeTokenBalance,
   buildWalletsUI,
 };
