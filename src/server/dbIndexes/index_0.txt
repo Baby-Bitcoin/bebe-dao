@@ -1,3 +1,1 @@
-
-1726447057 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726447057,"lastSessionAt":1726447057}}
-1726447063 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726447057,"lastSessionAt":1726447063}}
+1726478999 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726478736,"lastSessionAt":1726478736,"avatarUrl":"avatar-1726478745782.webp"}}

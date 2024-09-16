@@ -2,11 +2,13 @@ const { Connection, PublicKey } = require('@solana/web3.js');
 const { getAccount, TOKEN_PROGRAM_ID } = require('@solana/spl-token');
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config({
+    path: ".env",
+});
 
 // Function to get the shared connection
 const getWeb3Connection = () => {
-    const connectionUrl = 'https://winter-capable-firefly.solana-mainnet.quiknode.pro/7c742bf076d345847ec8ed4289607694598df0b8/';
+    const connectionUrl = process.env.SOLANA_ENDPOINT || 'https://api.mainnet-beta.solana.com';
     return new Connection(connectionUrl, 'confirmed');
 };
 

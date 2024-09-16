@@ -133,8 +133,7 @@ const connectToWallet = async (walletName: string) => {
       localStorage.setItem("publicKey", publicKey);
       localStorage.setItem("connectedWallet", walletName);
       const body: any = JSON.stringify({
-        address: publicKey,
-        login: "yes"
+        address: publicKey
       });
       await fetch("/address-info", {
         method: "POST",

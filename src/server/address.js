@@ -1,5 +1,4 @@
 const { InMemoryDB, dbConnection } = require('./butterfly');
-// const { getTokenBalance } = require('./js/web3');
 const fs = require("fs");
 const { currentUnixTimestamp } = require("./utilities");
 const { FORBIDDEN_USERNAMES } = require("./configs");
@@ -15,73 +14,68 @@ const AVATAR_PREFIX = path.join(
 );
 
 const addressInfo = async function (data, avatarUrl = null) {
-//console.log(await getTokenBalance(data.address));
+
+  // Check for forbidden username
   if (FORBIDDEN_USERNAMES.includes(data.username)) {
     throw new Error(`Not allowed to use ${data.username} as username`);
   }
 
-  let address = await dbConnection.getKey(
-    InMemoryDB.ADDRESSES_DB,
-    data.address
-  );
+  // Fetch the existing keyObject from the database
+  let keyObject = await dbConnection.getKey(InMemoryDB.ADDRESSES_DB, data.address);
 
-  // Initialize address if it does not exist
-  const Authenticate = async () => {
-    if (!address) {
-      console.log('Register');
-      address = {
-        ...data,
-        registeredAt: currentUnixTimestamp(),
-        lastSessionAt: currentUnixTimestamp()
-      };
+  const nowTime = currentUnixTimestamp();
+  const sessionTimeout = 86400; // 24 hours in seconds
+  let shouldSave = false; // Flag to track if we need to save data
 
-      delete address.address; // Remove the `address` key before saving
-      delete address.login;
-      await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, address);
-    }
-
-    else if (data.login && data.login === 'yes') {
-      console.log('Login');
-      address = {
-        lastSessionAt: currentUnixTimestamp()
-      };
-
-      delete address.address; // Remove the `address` key before saving
-      delete address.login;
-      await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, address);
-    }
+  // Initialize keyObject if it doesn't exist (new registration)
+  if (!keyObject) {
+    keyObject = {
+      registeredAt: nowTime,
+      lastSessionAt: nowTime,
+      // Initialize other properties if needed
+    };
+    shouldSave = true; // New registration, so we need to save
   }
 
-  Authenticate();
-
-
+  // Determine if we should update session based on actual time difference
+  const lastSession = keyObject.lastSessionAt || 0;
+  if (data.login === 'yes' && (nowTime - lastSession) > sessionTimeout) {
+    keyObject.lastSessionAt = nowTime;
+    shouldSave = true; // Legitimate session update based on timeout
+  }
 
   // Handle avatarUrl update and remove the old avatar file if it exists
-  if (avatarUrl) {
-    const oldAvatarUrl = address.avatarUrl;
+  if (avatarUrl && avatarUrl !== keyObject.avatarUrl) {
+    const oldAvatarUrl = keyObject.avatarUrl;
     if (oldAvatarUrl) {
       fs.rmSync(path.join(AVATAR_PREFIX, oldAvatarUrl), { force: true });
-      fs.rmSync(path.join(AVATAR_PREFIX+'/thumbnails', oldAvatarUrl), { force: true });
+      fs.rmSync(path.join(AVATAR_PREFIX + '/thumbnails', oldAvatarUrl), { force: true });
     }
-    address.avatarUrl = avatarUrl;
+    keyObject.avatarUrl = avatarUrl;
+    shouldSave = true; // Avatar has changed, so save
   }
-
 
   // Remove the `banned` property if it exists and is set to false
-  if (address.banned === false) {
-    delete address.banned;
+  if (keyObject.banned === false) {
+    delete keyObject.banned;
+    shouldSave = true; // Banned property modified, so save
   }
 
-  const result = await dbConnection.getKey(
-    InMemoryDB.ADDRESSES_DB,
-    data.address
-  );
+  // Clean up unwanted properties before saving
+  delete keyObject.login;
+  delete keyObject.address;
+
+  // Save data only if necessary (new registration, legitimate login, or avatar update)
+  if (shouldSave) {
+    await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, keyObject);
+  }
 
   return {
-    ...result,
+    ...keyObject,
     address: data.address
   };
 };
+
 
 module.exports = class Address {
   static async find(publicKey) {

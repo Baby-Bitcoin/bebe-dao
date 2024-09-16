@@ -2,7 +2,7 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
       "rootDir": "./src/client",
-      "outDir": "./public_html/js"
+      "outDir": "./public_html/dist"
     },
     "include": ["src/client**/*.ts"]
 }
