@@ -98,7 +98,7 @@ class InMemoryDB {
      * @param {string} key - The key being set or deleted.
      * @param {boolean} logOperation - Whether to log the operation (defaults to true).
      */
-    writeLog(index, operation, key, logOperation = true) {
+    async writeLog(index, operation, key, logOperation = true) {
         if (logOperation) {
             const filePath = path.join(this.logDir, `index_${index}.txt`);
             const unixTimestamp = Math.floor(Date.now() / 1000); // Convert to UNIX time in seconds
@@ -119,7 +119,7 @@ class InMemoryDB {
      * @param {number} index - The index (0-15) from which to retrieve the keys.
      * @returns {string[]} An array of strings representing all keys in the specified index.
      */
-    getAllKeys(index) {
+    async getAllKeys(index) {
         return Object.keys(this.indexes[index] || {});
     }
 
@@ -132,7 +132,7 @@ class InMemoryDB {
      * @param {string} [order='normal'] - The order of keys ('normal' or 'reverse').
      * @returns {string[]} An array of strings representing the requested `n` keys in the specified index.
      */
-    getNKeys(index, n, page, order = 'normal') {
+    async getNKeys(index, n, page, order = 'normal') {
         const allKeys = this.getAllKeys(index);
 
         // Handle ordering
@@ -150,7 +150,7 @@ class InMemoryDB {
      * @param {string} pattern - A regex pattern string to search for within the keys.
      * @returns {string[]} An array of strings representing all keys that match the given pattern.
      */
-    searchKeys(index, pattern) {
+    async searchKeys(index, pattern) {
         const regex = new RegExp(pattern);
         return this.getAllKeys(index).filter(key => regex.test(key));
     }
@@ -163,7 +163,7 @@ class InMemoryDB {
      * @param {*} value - The value to be associated with the key. Can be any valid JavaScript object.
      * @param {boolean} logOperation - Whether to log the operation (defaults to true).
      */
-    setKey(index, key, value, logOperation = true) {
+    async setKey(index, key, value, logOperation = true) {
         // If the key already exists, merge the new value with the existing one
         const existingValue = this.indexes[index][key] || {};
         const updatedValue = { ...existingValue, ...value };  // Merge old and new values
@@ -182,7 +182,7 @@ class InMemoryDB {
      * @param {string} key - The key whose value should be retrieved.
      * @returns {*} The value associated with the key, or null if the key does not exist.
      */
-    getKey(index, key) {
+    async getKey(index, key) {
         return this.indexes[index][key] || null;
     }
 
@@ -193,9 +193,33 @@ class InMemoryDB {
      * @param {string} key - The key to be removed from the index.
      * @param {boolean} logOperation - Whether to log the operation (defaults to true).
      */
-    deleteKey(index, key, logOperation = true) {
+    async deleteKey(index, key, logOperation = true) {
         delete this.indexes[index][key]; // Remove the key from memory
         this.writeLog(index, 'delete', key, logOperation); // Log the deletion
+    }
+
+        /**
+     * Returns the next available ID for POSTS_DB.
+     * It finds the highest existing post id and returns one greater than that.
+     * 
+     * @returns {number} The new ID for the next post.
+     */
+    async getNewID() {
+        const postsIndex = InMemoryDB.POSTS_DB;
+        const allKeys = await this.getAllKeys(postsIndex);
+
+        let maxId = 0;
+
+        // Iterate through all posts to find the highest ID
+        for (const key of allKeys) {
+            const postData = await this.getKey(postsIndex, key);
+            if (postData && postData.post && typeof postData.post.id === 'number') {
+                maxId = Math.max(maxId, postData.post.id);
+            }
+        }
+
+        // Return the new ID which is maxId + 1
+        return maxId + 1;
     }
 }
 

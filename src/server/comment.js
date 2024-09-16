@@ -1,5 +1,5 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
-const RedisClient = require("./redis");
+const { InMemoryDB, dbConnection } = require('./butterfly');
 const Post = require("./post");
 
 class Comment {
@@ -26,7 +26,8 @@ class Comment {
     }
 
     let postComments =
-      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, this.postId)) || [];
+      // (await RedisClient.jsonget(RedisClient.COMMENTS_DB, this.postId)) || [];
+      (await dbConnection.setKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
     this.data.id = postComments.length + 1;
 
     if (this.type == "reply") {
@@ -39,16 +40,16 @@ class Comment {
       postComments.push(this.data);
     }
 
-    await RedisClient.jsonset(
-      RedisClient.COMMENTS_DB,
+    await dbConnection.setKey(
+      InMemoryDB.COMMENTS_DB,
       this.postId,
       postComments
     );
   }
 
   static async mergeCommentAddress(comment) {
-    const address = await RedisClient.jsonget(
-      RedisClient.ADDRESSES_DB,
+    const address = await dbConnection.getKey(
+      InMemoryDB.ADDRESSES_DB,
       comment.walletAddress
     );
 

@@ -82,7 +82,8 @@ const getTokenBalance = async (walletAddress) => {
     );
     return mintAccount ? uiAmountFromAccount(mintAccount) : 0;
   } catch (error) {
-    console.error("Error fetching token balance:", error);
+    const errorMessage = error.message.split(":").slice(0, 2).join(":"); // Limit the error message to the first 2 lines
+    console.error(`${errorMessage}`);
     return 0;
   }
 };
