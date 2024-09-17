@@ -1,4 +1,4 @@
-# Changelog v1.0.1 🦋
+# Changelog v0.1 🦋
 
 > _"Only One Eternal Rule: Curate this log yourself as a developer, yes You, adding your own unique point of view on the development timeline, respecting the .MD text formatting (just use chatGPT with this prompt formula: "Format this changelog with creative .MD formatting, reply only with the code")."_
 
