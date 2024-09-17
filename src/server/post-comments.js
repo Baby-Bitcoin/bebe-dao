@@ -1,10 +1,10 @@
 const { shorthandAddress } = require("./utilities");
-const RedisClient = require("./redis");
+const { InMemoryDB, dbConnection } = require('./butterfly');
 
 module.exports = class PostComments {
   static async findByCommentsPostId(postId) {
     let comments =
-      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, postId)) || [];
+      (await dbConnection.setKey(InMemoryDB.COMMENTS_DB, postId)) || [];
 
     for (let index = 0; index < comments.length; index++) {
       comments[index] = await this.mergeCommentAddress(comments[index]);
@@ -19,8 +19,8 @@ module.exports = class PostComments {
   }
 
   static async mergeCommentAddress(comment) {
-    const address = await RedisClient.jsonget(
-      RedisClient.ADDRESSES_DB,
+    const address = await dbConnection.setKey(
+      InMemoryDB.ADDRESSES_DB,
       comment.walletAddress
     );
 

@@ -6,6 +6,7 @@ import { makeChart } from "./chart.js";
 
 const attachListenersToVote = async (post: any) => {
   $(".vote-btn").addEventListener("click", async (event) => {
+    $("#loader").style.display = "";
     if (!localStorage.getItem("publicKey")) {
       showModal(buildWalletsUI());
       return;
@@ -18,6 +19,7 @@ const attachListenersToVote = async (post: any) => {
       const html = `
         <div class="overlayMessage">You need to select an option.</div>
       `;
+      $("#loader").style.display = "none";
       showModal(html);
       return;
     }
@@ -27,6 +29,7 @@ const attachListenersToVote = async (post: any) => {
       const html = `
         <div class="overlayMessage">You need at least ${MIN_TOKEN_BALANCE_FOR_POST} ${BEBE_SYMBOL} to vote.</div>
       `;
+      $("#loader").style.display = "none";
       showModal(html);
       return;
     }
@@ -53,9 +56,12 @@ const attachListenersToVote = async (post: any) => {
       const html = `
         <div class="overlayMessage">The following error occurred:<br>${voteResult.error}</div>
       `;
+      $("#loader").style.display = "none";
       showModal(html);
       return;
     }
+
+    $("#loader").style.display = "none";
     let currentVotes = $('#total-users b').textContent;
     $('#total-users b').textContent = `${Number(currentVotes) + 1}`;
     const votingOptions = $$('#postVotingOptions input')  as NodeListOf<HTMLInputElement>;

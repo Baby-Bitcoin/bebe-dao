@@ -123,6 +123,7 @@ const attachListenersToCommentBoxes = (post: any) => {
 };
 
 const postComment = async (data: any) => {
+  $("#loader").style.display = "";
   if (!localStorage.getItem("publicKey")) {
     showModal(buildWalletsUI());
     return;
@@ -146,7 +147,7 @@ const postComment = async (data: any) => {
     // Promot error message to the user
     return;
   }
-
+  $("#loader").style.display = "";
   if (result.postId) {
     window.location.reload();
   }

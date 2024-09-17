@@ -25,12 +25,11 @@ class Comment {
       throw new Error("Comments will be opened after the voting period ends");
     }
 
-    let postComments =
-      // (await RedisClient.jsonget(RedisClient.COMMENTS_DB, this.postId)) || [];
-      (await dbConnection.setKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
+    let postComments = (await dbConnection.getKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
     this.data.id = postComments.length + 1;
 
     if (this.type == "reply") {
+      console.log('Reply to ID or ID ?: ', this.postId);
       postComments.forEach((comment) => {
         if (comment.id == this.commentId) {
           comment.replies = [this.data, ...comment.replies];
@@ -39,12 +38,14 @@ class Comment {
     } else {
       postComments.push(this.data);
     }
-
+    
     await dbConnection.setKey(
       InMemoryDB.COMMENTS_DB,
       this.postId,
       postComments
     );
+
+    console.log('Commment ID: ', this.postId);
   }
 
   static async mergeCommentAddress(comment) {

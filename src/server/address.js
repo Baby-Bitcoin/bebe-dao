@@ -53,6 +53,7 @@ const addressInfo = async function (data, avatarUrl = null) {
       fs.rmSync(path.join(AVATAR_PREFIX + '/thumbnails', oldAvatarUrl), { force: true });
     }
     keyObject.avatarUrl = avatarUrl;
+    keyObject.username = data.username;
     shouldSave = true; // Avatar has changed, so save
   }
 

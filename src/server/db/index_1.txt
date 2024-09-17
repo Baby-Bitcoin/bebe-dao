@@ -1,0 +1,1 @@
+1726590941 set {"key":"1","value":{"type":"proposal","walletAddress":"Cr7LjzfdqzwqP78R4PHHaFnVqucHmPxMaAF6KXEdpndY","title":"AAsdaasddas","imageUrl":"","description":"asdas","options":["For","Against"],"createdAt":1726590165,"expiresAt":1729182165,"tags":"asdasds","votes":[0,0],"quorum":15,"id":1,"totalCurrentAddresses":1}}
