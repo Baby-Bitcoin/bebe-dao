@@ -1,3 +1,2 @@
-1726595875 set {"key":"Cr7LjzfdqzwqP78R4PHHaFnVqucHmPxMaAF6KXEdpndY","value":{"registeredAt":1726590132,"lastSessionAt":1726590132,"avatarUrl":"avatar-1726590144163.jpeg","username":"oganicdev"}}
-1726595875 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726590363,"lastSessionAt":1726590363}}
-1726596445 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726590363,"lastSessionAt":1726590363,"avatarUrl":"avatar-1726596445134.jpeg","username":"luki"}}
+1726702004 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726702004,"lastSessionAt":1726702004}}
+1726702011 set {"key":"87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD","value":{"registeredAt":1726702004,"lastSessionAt":1726702004,"avatarUrl":"avatar-1726702011501.webp","username":"luki"}}

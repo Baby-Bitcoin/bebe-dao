@@ -1,2 +1,0 @@
-1726595875 set {"key":"1","value":{"firstVoteAt":1726590188,"votes":[1,0],"voters":["Cr7LjzfdqzwqP78R4PHHaFnVqucHmPxMaAF6KXEdpndY"],"weight":[1,0]}}
-1726596280 set {"key":"2","value":{"firstVoteAt":1726596280,"votes":[1,0],"voters":["87AQ5gem6zAXHjCDj6csAF9qjhEWkspxtLmF7a7dteGD"],"weight":[1,0]}}

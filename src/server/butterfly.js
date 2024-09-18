@@ -224,7 +224,7 @@ class InMemoryDB {
 
     /**
      * Returns the next available ID for POSTS_DB.
-     * It finds the highest existing post id and returns one greater than that.
+     * It finds the highest existing in-memory post id and returns one greater than that.
      * 
      * @returns {number} The new ID for the next post.
      */
