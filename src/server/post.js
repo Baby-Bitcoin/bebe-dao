@@ -1,7 +1,7 @@
 const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
 const { InMemoryDB, dbConnection } = require('./butterfly');
 const { ADMINS } = require("./configs");
-const PostComments = require("./post-comments");
+const GetComments = require("./get-comments");
 const fs = require("fs");
 const path = require("path");
 
@@ -64,9 +64,9 @@ module.exports = class Post {
       post.walletAddress
     );
 
-    const votes =
-      (await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id)) || [];
-    const comments = await PostComments.findByCommentsPostId(post.id);
+    const votes = await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id) || {};
+
+    const comments = await GetComments.findPost(post.id);
 
     return { post, address, votes, comments };
   }

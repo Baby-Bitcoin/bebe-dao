@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config({
   path: ".env",
 });
@@ -7,7 +7,7 @@ const path = require("path");
 const express = require("express");
 const session = require("express-session");
 const Joi = require("joi"); // this is for data validation sent from front-end
-const { createStorage } = require("./src/server/imageProcessing");
+const { createStorage } = require("./src/server/image-processing");
 const Post = require("./src/server/post");
 const Comment = require("./src/server/comment");
 const Vote = require("./src/server/vote"); // functions ?  variables
@@ -51,7 +51,7 @@ app.use(express.static(path.join(__dirname, "public_html")));
 
 app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   const data = await Post.find(req.params.postId);
-  
+
   if (!data) {
     // Handle the case where the post is not found
     return res.status(404).send({ error: "Post not found" });
@@ -157,7 +157,7 @@ app.delete(
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
     address: Joi.string().max(58).required(),
-    login: Joi.string().max(3)
+    login: Joi.string().max(3),
   });
 
   const { error } = schema.validate(req.body, () => {});
@@ -241,12 +241,11 @@ app.post(
   async (req, res) => {
     const schema = Joi.object({
       postId: Joi.number().integer().max(23000).precision(0).required(),
-      commentId: Joi.number().integer().max(23000).precision(0).optional(),
       type: Joi.string().max(10).required(),
       content: Joi.string().min(2).max(1001).required(),
     });
 
-    const { error } = schema.validate(req.body, () => {});
+    const { error } = schema.validate(req.body);
 
     if (error) {
       res.status(401).send(error.details[0].message);
@@ -254,12 +253,14 @@ app.post(
     }
 
     try {
-      const comment = new Comment({
+      const newComment = new Comment({
         ...req.body,
         walletAddress: req.session.publicKey,
       });
 
-      res.send(comment);
+      await newComment.save();
+
+      res.send(newComment);
     } catch (error) {
       res.status(409).send({ error: error.message });
     }
@@ -268,5 +269,5 @@ app.post(
 
 app.set("trust proxy", 1);
 app.listen(process.env.APP_PORT, () => {
-  console.log("Baby DAO is running on port " + process.env.APP_PORT)
+  console.log("Baby DAO is running on port " + process.env.APP_PORT);
 });

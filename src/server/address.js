@@ -28,6 +28,17 @@ const addressInfo = async function (data, avatarUrl = null) {
   const sessionTimeout = 86400; // 24 hours in seconds
   let shouldSave = false; // Flag to track if we need to save data
 
+  // Check if username is used
+  const allUsers = await dbConnection.getIndexContent(InMemoryDB.ADDRESSES_DB); // Get all objects in ADDRESSES_DB
+  
+  for (const key in allUsers) { // Use for..in to iterate over object keys
+    const user = allUsers[key];
+    // Check if the 'username' field exists and matches the desired username
+    if (user.username && user.username === data.username) {
+      throw new Error(`${data.username} is taken.`);
+    }
+  }
+  
   // Initialize keyObject if it doesn't exist (new registration)
   if (!keyObject) {
     keyObject = {
@@ -44,6 +55,24 @@ const addressInfo = async function (data, avatarUrl = null) {
     keyObject.lastSessionAt = nowTime;
     shouldSave = true; // Legitimate session update based on timeout
   }
+
+  // Handle avatarUrl update and remove the old avatar file if it exists
+  if (avatarUrl && avatarUrl !== keyObject.avatarUrl) {
+    const oldAvatarUrl = keyObject.avatarUrl;
+    if (oldAvatarUrl) {
+      fs.rmSync(path.join(AVATAR_PREFIX, oldAvatarUrl), { force: true });
+      fs.rmSync(path.join(AVATAR_PREFIX + '/thumbnails', oldAvatarUrl), { force: true });
+    }
+    keyObject.avatarUrl = avatarUrl;
+    shouldSave = true; // Avatar has changed, so save
+  }
+
+  // Handle avatarUrl update and remove the old avatar file if it exists
+  if (data.username && keyObject.username !== data.username) {
+    keyObject.username = data.username;
+    shouldSave = true; // Avatar has changed, so save
+  }
+
 
   // Handle avatarUrl update and remove the old avatar file if it exists
   if (avatarUrl && avatarUrl !== keyObject.avatarUrl) {

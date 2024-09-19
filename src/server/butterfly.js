@@ -44,54 +44,50 @@ class InMemoryDB {
      */
     async reconstructFromLogs() {
         for (let i = 0; i < 16; i++) {
-            const filePath = path.join(this.logDir, `index_${i}.txt`);
+            const filePath = path.join(this.logDir, `${i}.txt`);
             if (fs.existsSync(filePath)) {
                 console.log(`Reconstructing index ${i} from log file...`);
-    
+
                 const keyLatestState = {}; // Temporary storage for the latest key-value states
-    
+
                 const stream = fs.createReadStream(filePath, { encoding: 'utf-8' });
                 const rl = readline.createInterface({
                     input: stream,
-                    crlfDelay: Infinity // Handle all types of line endings (\n, \r\n)
+                    crlfDelay: Infinity
                 });
-    
+
                 for await (const logLine of rl) {
-                    if (logLine.trim()) { // Ignore empty lines
+                    if (logLine.trim()) {
                         const [timestamp, operation, jsonData] = logLine.split(' ', 3);
                         const data = JSON.parse(jsonData);
-    
-                        // Convert the key to a number for all DBs except ADDRESSES_DB
-                        let key = i === InMemoryDB.ADDRESSES_DB ? String(data.key) : Number(data.key);
-    
+
+                        let key = this.convertKeyType(i, data.key);
+
                         if (operation === 'set') {
                             keyLatestState[key] = data.value;
                         } else if (operation === 'delete') {
-                            keyLatestState[key] = null; // Mark the key for deletion
+                            keyLatestState[key] = null;
                         }
                     }
                 }
-    
-                // Apply the latest state to the in-memory DB and rewrite the log file with only the latest states
+
                 const compactedLog = [];
                 for (const [key, value] of Object.entries(keyLatestState)) {
                     if (value !== null) {
-                        this.setKey(i, key, value, false); // Update in-memory DB without logging
+                        this.setKey(i, key, value, false);
                         compactedLog.push(
                             `${Math.floor(Date.now() / 1000)} set ${JSON.stringify({ key: key.toString(), value })}`
                         );
                     } else {
-                        this.deleteKey(i, key, false); // Remove from memory without logging
+                        this.deleteKey(i, key, false);
                     }
                 }
-    
-                // Rewrite the log file with only the latest entries (compaction)
+
                 fs.writeFileSync(filePath, compactedLog.join('\n') + '\n', { encoding: 'utf-8' });
-    
                 console.log(`Reconstruction and compaction of index ${i} completed.`);
             }
         }
-    } 
+    }
     
 
     /**
@@ -106,15 +102,14 @@ class InMemoryDB {
      */
     async writeLog(index, operation, key, logOperation = true) {
         if (logOperation) {
-            const filePath = path.join(this.logDir, `index_${index}.txt`);
-            const unixTimestamp = Math.floor(Date.now() / 1000); // Convert to UNIX time in seconds
+            const filePath = path.join(this.logDir, `${index}.txt`);
+            const unixTimestamp = Math.floor(Date.now() / 1000);
             let logEntry;
-    
-            // Convert key to string to ensure consistent logging format
+
             const keyString = key.toString();
-    
+
             if (operation === 'set') {
-                const value = this.indexes[index][key]; // Get the current full object from memory
+                const value = this.indexes[index][key];
                 logEntry = `${unixTimestamp} ${operation} ${JSON.stringify({ key: keyString, value })}\n`;
             } else {
                 logEntry = `${unixTimestamp} ${operation} ${JSON.stringify({ key: keyString })}\n`;
@@ -126,11 +121,7 @@ class InMemoryDB {
 
     // Helper method to convert key to the appropriate type
     convertKeyType(index, key) {
-        if (index === InMemoryDB.ADDRESSES_DB) {
-        return String(key); // Addresses are strings
-        } else {
-        return Number(key); // Other DBs use numeric keys
-        }
+        return index === InMemoryDB.ADDRESSES_DB ? String(key) : Number(key);
     }
 
 
@@ -164,6 +155,10 @@ class InMemoryDB {
         return orderedKeys.slice(start, start + n);
     }
 
+    async getIndexContent(index) {
+        return this.indexes[index];
+    }
+
     /**
      * Searches for keys that match a given regex pattern in a specific index.
      * 
@@ -178,6 +173,7 @@ class InMemoryDB {
 
     /**
      * Sets a key-value pair in a specific index, and logs the operation with the entire object stored in memory.
+     * Preserves the data type of the value (e.g., array, object, string, etc.).
      * 
      * @param {number} index - The index (0-15) where the key-value pair should be stored.
      * @param {string} key - The key to be added or updated in the index.
@@ -185,15 +181,19 @@ class InMemoryDB {
      * @param {boolean} logOperation - Whether to log the operation (defaults to true).
      */
     async setKey(index, key, value, logOperation = true) {
-        key = index === InMemoryDB.ADDRESSES_DB ? String(key) : Number(key); // Convert key type
-    
-        const existingValue = this.indexes[index][key] || {};
-        const updatedValue = { ...existingValue, ...value }; // Merge old and new values
-    
-        // Set the merged value in memory
-        this.indexes[index][key] = updatedValue;
-    
-        // Log the full updated state of the key
+        key = this.convertKeyType(index, key);
+
+        const existingValue = this.indexes[index][key];
+
+        if (existingValue !== undefined) {
+            if (Array.isArray(existingValue) && Array.isArray(value)) {
+                value = Array.from(new Set([...existingValue, ...value])); // Deduplicate
+            } else if (typeof existingValue === 'object' && typeof value === 'object') {
+                value = { ...existingValue, ...value };
+            }
+        }
+
+        this.indexes[index][key] = value;
         this.writeLog(index, 'set', key, logOperation);
     }
 

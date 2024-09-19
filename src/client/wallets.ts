@@ -1,6 +1,6 @@
 import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
-import { browserType, prettifyNumber } from "./utilities.js";
+import { browserType, prettifyNumber, overlayMSG } from "./utilities.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
@@ -112,7 +112,12 @@ const getAddressInfo = async (address: string) => {
     },
     body,
   })
-    .then((response) => response.json())
+    .then((response) => {
+      // Check if the status is 422
+      if (response.status === 422) {
+        overlayMSG('You are banned.');
+      };
+      return response.json()})
     .then((data) => {
       return data; // Ensure that data is returned
     })
@@ -297,7 +302,14 @@ const startup = () => {
     const result = await fetch("/address-info-form", {
       method: "POST",
       body: formData,
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (res.status === 409) {
+        overlayMSG('Username is taken or not allowed.');
+      };
+      if (res.status === 422) {
+        overlayMSG('You are banned.');
+      };
+      return res.json()});
     result.address ? ($("#profile").style.display = "") : null;
     $("#loader").style.display = "none";
 

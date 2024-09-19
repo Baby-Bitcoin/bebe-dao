@@ -3,6 +3,7 @@ import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
 import { getAddressAvatar } from "./address.js";
 import { areCommentsAllowed } from "./post.js";
+import { overlayMSG } from "./utilities.js";
 
 const drawPostCommentsSection = (post: any, comments: any[]) => {
   if (areCommentsAllowed(post)) {
@@ -84,21 +85,28 @@ const drawCommentReplyBox = (commentId: number = 0) => {
   `;
 };
 
-const attachListenersToCommentBoxes = (post: any) => {
+const attachListenersToCommentBoxes = async (post: any) => {
   if (!areCommentsAllowed(post)) {
     return;
   }
   let shownReplies = {};
-  $$(".comment-box").forEach((el) => {
-    el.addEventListener("click", function (event) {
+  $$(".comment-box").forEach(async (el) => {
+    if (el.getAttribute('data-listener') === 'true') {
+      return; // Listener already attached
+    }
+    el.setAttribute('data-listener', 'true'); // Mark as listener attached
+
+    el.addEventListener("click", async function (event) {
+      event.preventDefault();
       const commentId = parseInt(el.id.split("comment-")[1]);
+
       const replyForm = $(`#reply-to-${commentId}`);
       if (!replyForm || shownReplies[commentId]) {
         return;
       }
       shownReplies[commentId] = true;
       replyForm.classList.remove("hide");
-      replyForm.addEventListener("submit", (e) => {
+      replyForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const data = {
           postId: post.id,
@@ -111,7 +119,13 @@ const attachListenersToCommentBoxes = (post: any) => {
     });
   });
 
-  $("#post-comment-form").addEventListener("submit", (e) => {
+  const commentForm = $("#post-comment-form");
+  if (commentForm.getAttribute('data-listener') === 'true') {
+    return; // Listener already attached
+  }
+  commentForm.setAttribute('data-listener', 'true'); // Mark as listener attached
+
+  commentForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const data = {
       postId: post.id,
@@ -124,34 +138,63 @@ const attachListenersToCommentBoxes = (post: any) => {
 
 const postComment = async (data: any) => {
   $("#loader").style.display = "";
+
   if (!localStorage.getItem("publicKey")) {
     showModal(buildWalletsUI());
     return;
   }
 
-  const result: any = await fetch("/comments", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .catch(function (error) {
-      console.log(error);
+  try {
+    const response = await fetch("/comments", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
 
-  if (result.error) {
-    // TO-DO:
-    // Promot error message to the user
-    return;
-  }
-  $("#loader").style.display = "";
-  if (result.postId) {
-    window.location.reload();
+    // Check if the status is 422
+    if (response.status === 422) {
+      overlayMSG('You are bannedd.');
+      return;
+    }
+
+    // Check if the response is not OK (status code not in the range 200-299)
+    if (!response.ok) {
+      throw new Error(`An error occurred: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (result.error) {
+      // Handle general error returned by the server
+      alert('Error: ' + result.error.message || 'An unexpected error occurred.');
+      $("#loader").style.display = "none";
+      return;
+    }
+
+    $("#loader").style.display = "none";
+
+    if (result.postId) {
+      // Update and redraw comments without reloading
+      const response = await fetch(`/posts/${result.postId}`);
+      const newData = await response.json();
+      $('.comments').innerHTML = drawPostComments(newData, newData.comments);
+      attachListenersToCommentBoxes(newData);
+
+      // Clear the comment form after successful submission
+      const form = $("#post-comment-form") as HTMLFormElement;
+      form.reset(); // Reset the form state
+    }
+  } catch (error) {
+    // Handle any other errors
+    console.error(error);
+    alert(`Error: ${error.message || "An unexpected error occurred."}`);
+    $("#loader").style.display = "none";
   }
 };
+
 
 export {
   drawPostCommentsSection,
