@@ -5,142 +5,202 @@ import { getAddressAvatar } from "./address.js";
 import { areCommentsAllowed } from "./post.js";
 import { overlayMSG } from "./utilities.js";
 
-const drawPostCommentsSection = (post: any, comments: any[]) => {
-  if (areCommentsAllowed(post)) {
-    const html = `
-      <div class="comments-section">
-        <h2>Comments</h2>
-        <form
-          id="post-comment-form"
-          class="submit-comment main-comment-form">
-          <textarea minlength="2" maxlength="1000" required></textarea>
-          <input type="submit" value="Comment" />
-        </form>
-        ${drawPostComments(post, comments)}
-      </div>
-    `;
+interface Reply {
+  id: number;
+  username: string;
+  content: string;
+}
 
-    return html;
-  }
+interface Comment {
+  id: number;
+  username: string;
+  content: string;
+  replies?: Reply[];
+}
 
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  comments?: Comment[];
+}
+
+const drawPostCommentsSection = (post: Post, comments: Comment[]) => {
   const html = `
     <div class="comments-section">
       <h2>Comments</h2>
-      <p>Comments will be opened after the voting period ends.</p>
+      ${areCommentsAllowed(post) ? `
+        <form id="post-comment-form" class="submit-comment main-comment-form">
+          <textarea minlength="2" maxlength="1000" required></textarea>
+          <input type="submit" value="Comment" />
+        </form>
+        ${drawPostComments(comments)}` 
+      : `<p>Comments will be opened after the voting period ends.</p>`}
     </div>
-    `;
-
+  `;
   return html;
 };
 
-const drawSingleComment = (comment: any) => {
-  const html = `
+const drawSingleComment = (comment: Comment) => {
+  return `
     <header class="flex-center">
       <avatar><img src="${getAddressAvatar(comment)}"></avatar>
       <h3>${comment.username}</h3>
     </header>
     <p>${comment.content}</p>
   `;
-
-  return html;
 };
 
-const drawPostComments = (post: any, comments: any[]) => {
-  let commentTemplate = "";
+const drawPostComments = (comments: Comment[]) => {
+  return `
+    <div class="comments">
+      ${(comments || []).map(comment => `
+        <comment id="comment-${comment.id}" class='comment-box'>
+          ${drawSingleComment(comment)}
+          <div class="reply-form-container"></div>
+          <replies>
+            ${(comment.replies || []).map(reply => `
+              <reply id="post-reply-${reply.id}">
+                ${drawSingleComment(reply)}
+              </reply>
+            `).join('')}
+          </replies>
+        </comment>
+      `).join('')}
+    </div>
+  `;
+};
 
-  (comments || []).forEach((comment: any) => {
-    let replies = "";
-    (comment.replies || []).forEach((reply: any) => {
-      replies += `
-        <reply id="post-${post.id + "-reply-" + reply.id}">
-          ${drawSingleComment(reply)}
-        </reply>
-        `;
-    });
-    replies = "<replies>" + replies + "</replies>";
+const drawCommentReplyBox = (commentId: number) => `
+  <form id="reply-to-${commentId}">
+    <textarea minlength="2" maxlength="1000" required></textarea>
+    <input type="submit" value="Reply" />
+  </form>
+`;
 
-    commentTemplate += `
-      <comment
-        id="comment-${comment.id}"
-        class='comment-box'>
-        ${drawSingleComment(comment)}
-        ${drawCommentReplyBox(comment.id)}
-        ${replies}
-      </comment>
-    `;
+const attachListenersToCommentBoxes = async (post: Post) => {
+  if (!areCommentsAllowed(post)) return;
+
+  let activeCommentId: number | null = null;
+  let isSubmitting = false;
+
+  const commentBoxes = $$(".comment-box");
+
+  commentBoxes.forEach((el: HTMLElement) => {
+    if (el.getAttribute('data-listener') === 'true') return;
+
+    el.setAttribute('data-listener', 'true');
+
+    el.addEventListener("click", debounce(async function (event: Event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const commentId = parseInt(el.id.split("comment-")[1]);
+      const replyContainer = el.querySelector('.reply-form-container');
+
+      // Save the current textarea content if it exists
+      const existingTextarea = el.querySelector('textarea') as HTMLTextAreaElement;
+      const currentText = existingTextarea ? existingTextarea.value : "";
+
+      // Handle reply form reset
+      if (activeCommentId !== commentId) {
+        if (activeCommentId !== null) {
+          document.querySelector(`#comment-${activeCommentId} .reply-form-container`)!.innerHTML = "";
+        }
+        activeCommentId = commentId;
+        replyContainer!.innerHTML = drawCommentReplyBox(commentId);
+      } else {
+        replyContainer!.innerHTML = drawCommentReplyBox(commentId);
+      }
+
+      // Restore the previous textarea content
+      const newTextarea = el.querySelector(`#reply-to-${commentId} textarea`) as HTMLTextAreaElement;
+      if (newTextarea) {
+        newTextarea.value = currentText;
+      }
+
+      const replyForm = el.querySelector(`#reply-to-${commentId}`) as HTMLFormElement;
+
+      if (!replyForm.getAttribute('data-reply-listener')) {
+        attachSubmitListener(replyForm, commentId);
+      }
+
+      replyForm.querySelector("textarea")?.focus();
+
+    }, 50));
   });
 
-  const html = `
-    <div class="comments">${commentTemplate}</div>
-  `;
-  return html;
-};
+  const attachSubmitListener = (form: HTMLFormElement, commentId: number) => {
+    form.setAttribute('data-reply-listener', 'true');
 
-const drawCommentReplyBox = (commentId: number = 0) => {
-  return `
-    <form id="reply-to-${commentId}" class="hide">
-      <textarea minlength="2" maxlength="1000" required></textarea>
-      <input type="submit" value="Reply" />
-    </form>
-  `;
-};
+    form.addEventListener("submit", async (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-const attachListenersToCommentBoxes = async (post: any) => {
-  if (!areCommentsAllowed(post)) {
-    return;
-  }
-  let shownReplies = {};
-  $$(".comment-box").forEach(async (el) => {
-    if (el.getAttribute('data-listener') === 'true') {
-      return; // Listener already attached
-    }
-    el.setAttribute('data-listener', 'true'); // Mark as listener attached
+      if (isSubmitting) return;
 
-    el.addEventListener("click", async function (event) {
-      event.preventDefault();
-      const commentId = parseInt(el.id.split("comment-")[1]);
+      isSubmitting = true;
+      const textarea = form.querySelector("textarea")!;
+      const content = textarea.value.trim();
 
-      const replyForm = $(`#reply-to-${commentId}`);
-      if (!replyForm || shownReplies[commentId]) {
+      if (content.length < 2) {
+        alert("Reply must be at least 2 characters.");
+        isSubmitting = false;
         return;
       }
-      shownReplies[commentId] = true;
-      replyForm.classList.remove("hide");
-      replyForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const data = {
-          postId: post.id,
-          commentId,
-          type: "reply",
-          content: replyForm.querySelector("textarea").value,
-        };
-        postComment(data);
-      });
+
+      try {
+        console.log({ postId: post.id, commentId, type: "reply", content });
+        await postComment({ postId: post.id, commentId, type: "reply", content });
+        form.reset();
+      } catch (error) {
+        console.error('Error posting the reply:', error);
+      } finally {
+        isSubmitting = false;
+      }
     });
-  });
+  };
 
-  const commentForm = $("#post-comment-form");
-  if (commentForm.getAttribute('data-listener') === 'true') {
-    return; // Listener already attached
+  const commentForm = $("#post-comment-form") as HTMLFormElement;
+  if (commentForm && !commentForm.getAttribute('data-listener')) {
+    commentForm.setAttribute('data-listener', 'true');
+    commentForm.addEventListener("submit", async (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const textarea = commentForm.querySelector("textarea")!;
+      const content = textarea.value.trim();
+
+      if (content.length < 2) {
+        alert("Comment must be at least 2 characters.");
+        return;
+      }
+
+      try {
+        await postComment({ postId: post.id, type: "comment", content });
+        commentForm.reset();
+      } catch (error) {
+        console.error('Error posting the comment:', error);
+      }
+    });
   }
-  commentForm.setAttribute('data-listener', 'true'); // Mark as listener attached
-
-  commentForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = {
-      postId: post.id,
-      type: "comment",
-      content: (e.currentTarget as any).querySelector("textarea").value,
-    };
-    postComment(data);
-  });
 };
 
-const postComment = async (data: any) => {
+
+function debounce(func: Function, wait: number) {
+  let timeout: number | undefined;
+  return function (...args: any[]) {
+    clearTimeout(timeout);
+    timeout = window.setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+const postComment = async (data: { postId: number, commentId?: number, type: string, content: string }) => {
   $("#loader").style.display = "";
 
   if (!localStorage.getItem("publicKey")) {
     showModal(buildWalletsUI());
+    $("#loader").style.display = "none";
     return;
   }
 
@@ -154,13 +214,11 @@ const postComment = async (data: any) => {
       body: JSON.stringify(data),
     });
 
-    // Check if the status is 422
     if (response.status === 422) {
-      overlayMSG('You are bannedd.');
+      overlayMSG('You are banned.');
       return;
     }
 
-    // Check if the response is not OK (status code not in the range 200-299)
     if (!response.ok) {
       throw new Error(`An error occurred: ${response.statusText}`);
     }
@@ -168,33 +226,22 @@ const postComment = async (data: any) => {
     const result = await response.json();
 
     if (result.error) {
-      // Handle general error returned by the server
-      alert('Error: ' + result.error.message || 'An unexpected error occurred.');
-      $("#loader").style.display = "none";
+      alert('Error: ' + (result.error.message || 'An unexpected error occurred.'));
       return;
     }
 
-    $("#loader").style.display = "none";
-
     if (result.postId) {
-      // Update and redraw comments without reloading
-      const response = await fetch(`/posts/${result.postId}`);
-      const newData = await response.json();
-      $('.comments').innerHTML = drawPostComments(newData, newData.comments);
-      attachListenersToCommentBoxes(newData);
-
-      // Clear the comment form after successful submission
-      const form = $("#post-comment-form") as HTMLFormElement;
-      form.reset(); // Reset the form state
+      const newPostData = await (await fetch(`/posts/${result.postId}`)).json();
+      $('.comments').innerHTML = drawPostComments(newPostData.comments);
+      attachListenersToCommentBoxes(newPostData);
     }
   } catch (error) {
-    // Handle any other errors
     console.error(error);
     alert(`Error: ${error.message || "An unexpected error occurred."}`);
+  } finally {
     $("#loader").style.display = "none";
   }
 };
-
 
 export {
   drawPostCommentsSection,

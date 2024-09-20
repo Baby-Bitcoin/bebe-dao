@@ -29,7 +29,7 @@ class Comment {
     let updatedComments = (await dbConnection.getKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
 
     this.data.id = updatedComments.length + 1;
-
+    console.log(updatedComments);
 
     if (this.type == "reply") {
       console.log('Reply to ID or ID ?: ', this.postId);
@@ -42,7 +42,7 @@ class Comment {
       updatedComments.push(this.data);
     }
 
-    console.log(updatedComments);
+    //console.log(updatedComments);
 
     await dbConnection.setKey(
       InMemoryDB.COMMENTS_DB,
