@@ -414,17 +414,15 @@ const deletePost = async (post: any) => {
       return;
     }
 
-    // Check if the response is not OK (status code not in the range 200-299)
-    if (!response.ok) {
-      throw new Error(`An error occurred: ${response.statusText}`);
+    // Check if the status is 422
+    if (response.status === 409) {
+      console.log('There is a conflict error.');
     }
 
     const result = await response.json();
 
     if (result.error) {
       console.log(result.error); // Log the error for debugging
-      alert('Error occurred while deleting the post.');
-      return;
     }
 
     // Display success message and redirect

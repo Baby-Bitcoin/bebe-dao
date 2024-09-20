@@ -44,56 +44,59 @@ class InMemoryDB {
      */
     async reconstructFromLogs() {
         for (let i = 0; i < 16; i++) {
-            const filePath = path.join(this.logDir, `${i}.txt`);
+            const filePath = path.join(this.logDir, `${i}.ndjson`);
             if (fs.existsSync(filePath)) {
                 console.log(`Reconstructing index ${i} from log file...`);
-
+    
                 const keyLatestState = {}; // Temporary storage for the latest key-value states
-
+    
                 const stream = fs.createReadStream(filePath, { encoding: 'utf-8' });
                 const rl = readline.createInterface({
                     input: stream,
                     crlfDelay: Infinity
                 });
-
+    
                 for await (const logLine of rl) {
                     if (logLine.trim()) {
-                        const [timestamp, operation, jsonData] = logLine.split(' ', 3);
-                        const data = JSON.parse(jsonData);
-
-                        let key = this.convertKeyType(i, data.key);
-
-                        if (operation === 'set') {
-                            keyLatestState[key] = data.value;
-                        } else if (operation === 'delete') {
-                            keyLatestState[key] = null;
+                        try {
+                            const { operation, key, value } = JSON.parse(logLine);
+    
+                            if (operation === 'set') {
+                                keyLatestState[key] = value; // Store the latest set value
+                            } else if (operation === 'delete') {
+                                // Mark the key as deleted
+                                keyLatestState[key] = null;
+                            }
+                        } catch (e) {
+                            console.error(`Failed to parse log line: ${logLine}`);
+                            console.error(e);
                         }
                     }
                 }
-
+    
+                // Now we create a new compacted log without any redundant 'delete' operations
                 const compactedLog = [];
                 for (const [key, value] of Object.entries(keyLatestState)) {
                     if (value !== null) {
+                        // If there's a value, log the 'set' operation
                         this.setKey(i, key, value, false);
-                        compactedLog.push(
-                            `${Math.floor(Date.now() / 1000)} set ${JSON.stringify({ key: key.toString(), value })}`
-                        );
-                    } else {
-                        this.deleteKey(i, key, false);
+                        compactedLog.push(JSON.stringify({ operation: 'set', key, value }));
                     }
+                    // Skip the 'delete' entries entirely, as they should not persist in the log
                 }
-
+    
+                // Write the cleaned log back to the file
                 fs.writeFileSync(filePath, compactedLog.join('\n') + '\n', { encoding: 'utf-8' });
-                console.log(`Reconstruction and compaction of index ${i} completed.`);
+                console.log(`Reconstruction and compaction of index ${i} completed, all 'delete' entries removed.`);
             }
         }
-    }
+    }    
+    
     
 
     /**
      * Writes the log entry for a set or delete operation into the corresponding index file.
-     * Uses the entire object stored in memory for set operations to log the full state.
-     * Uses UNIX time in seconds for the timestamp.
+     * Uses NDJSON format for better resilience and readability.
      * 
      * @param {number} index - The index number (0-15) where the operation occurred.
      * @param {string} operation - The operation being performed: either 'set' or 'delete'.
@@ -102,28 +105,20 @@ class InMemoryDB {
      */
     async writeLog(index, operation, key, logOperation = true) {
         if (logOperation) {
-            const filePath = path.join(this.logDir, `${index}.txt`);
-            const unixTimestamp = Math.floor(Date.now() / 1000);
-            let logEntry;
-
-            const keyString = key.toString();
-
-            if (operation === 'set') {
-                const value = this.indexes[index][key];
-                logEntry = `${unixTimestamp} ${operation} ${JSON.stringify({ key: keyString, value })}\n`;
-            } else {
-                logEntry = `${unixTimestamp} ${operation} ${JSON.stringify({ key: keyString })}\n`;
-            }
-            fs.appendFileSync(filePath, logEntry);
+            const filePath = path.join(this.logDir, `${index}.ndjson`);
+            const logEntry = {
+                operation,
+                key: key.toString(),
+                value: operation === 'set' ? this.indexes[index][key] : undefined
+            };
+            fs.appendFileSync(filePath, JSON.stringify(logEntry) + '\n', { encoding: 'utf-8' });
         }
     }
-    
 
     // Helper method to convert key to the appropriate type
     convertKeyType(index, key) {
         return index === InMemoryDB.ADDRESSES_DB ? String(key) : Number(key);
     }
-
 
     /**
      * Retrieves all keys stored in a specific index.
@@ -146,10 +141,10 @@ class InMemoryDB {
      */
     async getNKeys(index, n, page, order = 'normal') {
         const allKeys = await this.getAllKeys(index);
-    
+
         // Handle ordering
         const orderedKeys = order === 'reverse' ? allKeys.reverse() : allKeys;
-    
+
         // Calculate the offset and return the slice
         const start = page * n;
         return orderedKeys.slice(start, start + n);
@@ -205,7 +200,7 @@ class InMemoryDB {
      * @returns {*} The value associated with the key, or null if the key does not exist.
      */
     async getKey(index, key) {
-        key = index === InMemoryDB.ADDRESSES_DB ? String(key) : Number(key); // Convert key type
+        key = this.convertKeyType(index, key);
         return this.indexes[index][key] || null;
     }
 
@@ -217,9 +212,18 @@ class InMemoryDB {
      * @param {boolean} logOperation - Whether to log the operation (defaults to true).
      */
     async deleteKey(index, key, logOperation = true) {
-        key = index === InMemoryDB.ADDRESSES_DB ? String(key) : Number(key); // Convert key type
-        delete this.indexes[index][key]; // Remove the key from memory
-        this.writeLog(index, 'delete', key, logOperation); // Log the deletion
+        key = this.convertKeyType(index, key);
+    
+        // Check if the key exists before attempting deletion
+        if (!this.indexes[index][key]) {
+            console.error(`Conflict 409: Key ${key} does not exist in index ${index}`);
+            return; // Exit the function if the key doesn't exist
+        } else {
+            console.log(`Deleting key: ${key} from index: ${index}`);
+            delete this.indexes[index][key]; // Remove the key from memory
+            await this.writeLog(index, 'delete', key, logOperation); // Log the deletion
+            console.log(`Key ${key} deleted successfully from index ${index}`);
+        }
     }
 
     /**
@@ -231,16 +235,16 @@ class InMemoryDB {
     async getNewID() {
         const postsIndex = InMemoryDB.POSTS_DB;
         const allKeys = await this.getAllKeys(postsIndex);
-    
+
         let maxId = 0;
-    
+
         for (const key of allKeys) {
             const postData = await this.getKey(postsIndex, key);
             if (postData && typeof postData.id === 'number') {
-            maxId = Math.max(maxId, postData.id);
+                maxId = Math.max(maxId, postData.id);
             }
         }
-    
+
         return maxId + 1;
     }
 }

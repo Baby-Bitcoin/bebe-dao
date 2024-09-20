@@ -28,6 +28,7 @@
 ## 🛠️ Work in Progress
 
 - **Fixed commenting** – Finally!
+- ** Changed butterfly.js Storage** - from .txt logs to .ndjson files, but now I have a weird key DELETE bug, a conflict. But Delete works anyway.
 
 ---
 
