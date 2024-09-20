@@ -6,7 +6,7 @@ class Comment {
   constructor(commentData) {
     this.type = commentData.type;
     this.postId = commentData.postId;
-    //this.commentId = commentData.commentId;
+    this.commentId = commentData.commentId;
     this.data = {
       walletAddress: commentData.walletAddress,
       content: commentData.content,
@@ -29,10 +29,9 @@ class Comment {
     let updatedComments = (await dbConnection.getKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
 
     this.data.id = updatedComments.length + 1;
-    console.log(updatedComments);
+
 
     if (this.type == "reply") {
-      console.log('Reply to ID or ID ?: ', this.postId);
       updatedComments.forEach((comment) => {
         if (comment.id == this.commentId) {
           comment.replies = [this.data, ...comment.replies];
@@ -41,8 +40,6 @@ class Comment {
     } else {
       updatedComments.push(this.data);
     }
-
-    //console.log(updatedComments);
 
     await dbConnection.setKey(
       InMemoryDB.COMMENTS_DB,

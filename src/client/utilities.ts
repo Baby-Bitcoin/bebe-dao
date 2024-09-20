@@ -128,6 +128,14 @@ const overlayMSG = (text : string) => {
   showModal(html);
 }
 
+const debounce = (func: Function, wait: number) => {
+  let timeout: number | undefined;
+  return function (...args: any[]) {
+    clearTimeout(timeout);
+    timeout = window.setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 export {
   browserType,
   prettifyNumber,
@@ -136,5 +144,6 @@ export {
   wait,
   countdown,
   currentUnixTimestamp,
-  overlayMSG
+  overlayMSG,
+  debounce
 };

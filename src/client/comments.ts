@@ -3,7 +3,16 @@ import { showModal } from "./modal.js";
 import { buildWalletsUI } from "./wallets.js";
 import { getAddressAvatar } from "./address.js";
 import { areCommentsAllowed } from "./post.js";
-import { overlayMSG } from "./utilities.js";
+import { overlayMSG, debounce } from "./utilities.js";
+
+// Get the current URL
+const currentUrl = window.location.href;
+
+// Create a new URL object
+const url = new URL(currentUrl);
+
+// Get the value of the 'id' parameter
+const URL_ID = Number(url.searchParams.get('id'));
 
 interface Reply {
   id: number;
@@ -150,8 +159,7 @@ const attachListenersToCommentBoxes = async (post: Post) => {
       }
 
       try {
-        console.log({ postId: post.id, commentId, type: "reply", content });
-        await postComment({ postId: post.id, commentId, type: "reply", content });
+        await postComment({ postId: URL_ID, commentId, type: "reply", content });
         form.reset();
       } catch (error) {
         console.error('Error posting the reply:', error);
@@ -177,7 +185,7 @@ const attachListenersToCommentBoxes = async (post: Post) => {
       }
 
       try {
-        await postComment({ postId: post.id, type: "comment", content });
+        await postComment({ postId: URL_ID, type: "comment", content });
         commentForm.reset();
       } catch (error) {
         console.error('Error posting the comment:', error);
@@ -185,15 +193,6 @@ const attachListenersToCommentBoxes = async (post: Post) => {
     });
   }
 };
-
-
-function debounce(func: Function, wait: number) {
-  let timeout: number | undefined;
-  return function (...args: any[]) {
-    clearTimeout(timeout);
-    timeout = window.setTimeout(() => func.apply(this, args), wait);
-  };
-}
 
 const postComment = async (data: { postId: number, commentId?: number, type: string, content: string }) => {
   $("#loader").style.display = "";

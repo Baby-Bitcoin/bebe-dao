@@ -241,6 +241,7 @@ app.post(
   async (req, res) => {
     const schema = Joi.object({
       postId: Joi.number().integer().max(23000).precision(0).required(),
+      commentId: Joi.number().integer().max(23000).precision(0).optional(),
       type: Joi.string().max(10).required(),
       content: Joi.string().min(2).max(1001).required(),
     });

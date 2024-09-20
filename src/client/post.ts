@@ -88,7 +88,6 @@ const handlePostSubmit = async () => {
       }
     
       const post = await response.json();
-      console.log(post);
     
       if (post.id) {
         $("#post-form-container").style.display = "";
