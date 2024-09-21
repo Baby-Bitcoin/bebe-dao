@@ -11,6 +11,7 @@ const attachListenersToVote = async (post: any) => {
 
     if (!localStorage.getItem("publicKey")) {
       showModal(buildWalletsUI());
+      $("#loader").style.display = "none";
       return;
     }
 
