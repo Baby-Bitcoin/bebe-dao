@@ -1,4 +1,4 @@
-const RedisClient = require("./redis");
+const { InMemoryDB, dbConnection } = require('./butterfly');
 const { currentUnixTimestamp } = require("./utilities");
 
 module.exports = class Vote {
@@ -10,12 +10,12 @@ module.exports = class Vote {
   }
 
   async save() {
-    const post = await RedisClient.jsonget(RedisClient.POSTS_DB, this.postId);
+    const post = await dbConnection.getKey(InMemoryDB.POSTS_DB, this.postId);
     if (!post) {
       throw new Error("Post not found");
     }
-    let postVotes = await RedisClient.jsonget(
-      RedisClient.VOTES_DB,
+    let postVotes = await dbConnection.getKey(
+      InMemoryDB.VOTES_DB,
       this.postId
     );
 
@@ -37,7 +37,7 @@ module.exports = class Vote {
     postVotes.votes[this.optionIndex] += 1;
     postVotes.weight[this.optionIndex] += 1;
 
-    await RedisClient.jsonset(RedisClient.VOTES_DB, this.postId, postVotes);
-    return RedisClient.jsonget(RedisClient.VOTES_DB, this.postId);
+    await dbConnection.setKey(InMemoryDB.VOTES_DB, this.postId, postVotes);
+    return dbConnection.getKey(InMemoryDB.VOTES_DB, this.postId);
   }
 };

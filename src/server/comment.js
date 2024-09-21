@@ -1,5 +1,5 @@
-const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
-const RedisClient = require("./redis");
+const { currentUnixTimestamp } = require("./utilities");
+const { InMemoryDB, dbConnection } = require('./butterfly');
 const Post = require("./post");
 
 class Comment {
@@ -17,6 +17,7 @@ class Comment {
 
   async save() {
     const post = await Post.find(this.postId);
+
     if (!post) {
       throw new Error("Post doesn't exist");
     }
@@ -25,38 +26,26 @@ class Comment {
       throw new Error("Comments will be opened after the voting period ends");
     }
 
-    let postComments =
-      (await RedisClient.jsonget(RedisClient.COMMENTS_DB, this.postId)) || [];
-    this.data.id = postComments.length + 1;
+    let updatedComments = (await dbConnection.getKey(InMemoryDB.COMMENTS_DB, this.postId)) || [];
+
+    this.data.id = updatedComments.length + 1;
+
 
     if (this.type == "reply") {
-      postComments.forEach((comment) => {
+      updatedComments.forEach((comment) => {
         if (comment.id == this.commentId) {
           comment.replies = [this.data, ...comment.replies];
         }
       });
     } else {
-      postComments.push(this.data);
+      updatedComments.push(this.data);
     }
 
-    await RedisClient.jsonset(
-      RedisClient.COMMENTS_DB,
+    await dbConnection.setKey(
+      InMemoryDB.COMMENTS_DB,
       this.postId,
-      postComments
+      updatedComments
     );
-  }
-
-  static async mergeCommentAddress(comment) {
-    const address = await RedisClient.jsonget(
-      RedisClient.ADDRESSES_DB,
-      comment.walletAddress
-    );
-
-    comment.username =
-      address.username || shorthandAddress(comment.walletAddress);
-    comment.avatarUrl = address.avatarUrl;
-
-    return comment;
   }
 }
 

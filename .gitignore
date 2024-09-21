@@ -131,3 +131,5 @@ dist
 .DS_Store
 
 public_html/images/
+src/server/db/
+src/server/dist/

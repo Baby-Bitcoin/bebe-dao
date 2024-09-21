@@ -1,8 +1,6 @@
 import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
-import { browserType, prettifyNumber } from "./utilities.js";
-import { getTokenBalance } from "./web3.js";
-import { BEBE_MINT_ADDRESS } from "./config.js";
+import { browserType, prettifyNumber, overlayMSG } from "./utilities.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
@@ -101,62 +99,77 @@ const disconnectWallet = async (walletName: string = "") => {
   }
 };
 
+const getAddressInfo = async (address: string) => {
+  const body: any = JSON.stringify({
+    address: address,
+  });
+
+  return await fetch("/address-info", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body,
+  })
+    .then((response) => {
+      // Check if the status is 422
+      if (response.status === 422) {
+        overlayMSG('You are banned.');
+      };
+      return response.json()})
+    .then((data) => {
+      return data; // Ensure that data is returned
+    })
+    .catch((error) => {
+      console.error("Error fetching address info:", error);
+      return null; // Return null or an empty object in case of an error
+    });
+};
+
 const connectToWallet = async (walletName: string) => {
-  const wallet = getAllAvailableWallets().filter(
-    (wallet: any) => wallet.name == walletName
-  )[0];
+    const wallet = getAllAvailableWallets().filter(
+      (wallet: any) => wallet.name == walletName
+    )[0];
 
-  if (!wallet) {
-    return;
-  }
-
-  if (!wallet.adapter) {
-    if (!wallet.extensionUrl) {
-      showModal(
-        `<div class="overlayMessage">There is no ${browserType()} extension for ${walletName}.<div>`
-      );
+    if (!wallet) {
       return;
     }
-    globalThis.open(wallet.extensionUrl, "_blank").focus();
-    return;
-  }
 
-  const connected = await wallet.adapter.connect();
-  if (connected) {
-    closeModal();
-    const avatarName = $("#avatar-name");
-    $("#login span").textContent = 'Switch Wallet'
-    $("#logout").classList.remove("hide");
-    $("#account").classList.remove("hide");
-    $("#add").style.display = "block"; // on submit for Post we need to check min balance
-    const publicKey = wallet.adapter.publicKey.toBase58();
-    avatarName.innerHTML = publicKey;
-    localStorage.setItem("publicKey", publicKey);
-    localStorage.setItem("connectedWallet", walletName);
-    const body: any = JSON.stringify({
-      address: publicKey,
-    });
-    refreshTokenBalance();
-    await fetch("/address-info", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body,
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        // localStorage.setItem("username", data.username);
-        // localStorage.setItem("avatar", data.username);
+    if (!wallet.adapter) {
+      if (!wallet.extensionUrl) {
+        showModal(
+          `<div class="overlayMessage">There is no ${browserType()} extension for ${walletName}.<div>`
+        );
+        return;
+      }
+      globalThis.open(wallet.extensionUrl, "_blank").focus();
+      return;
+    }
 
-        // still need to handle local storage to save on requests ^^^^
+    const connected = await wallet.adapter.connect();
+    if (connected) {
+      closeModal();
+      const avatarName = $("#avatar-name");
+      $("#login span").textContent = 'Switch Wallet'
+      $("#logout").classList.remove("hide");
+      $("#account").classList.remove("hide");
+      $("#add").style.display = "block"; // on submit for Post we need to check min balance
+      const publicKey = wallet.adapter.publicKey.toBase58();
+      avatarName.innerHTML = publicKey;
+      localStorage.setItem("publicKey", publicKey);
+      localStorage.setItem("connectedWallet", walletName);
 
-        updateAvatarSrcAndUserName(data.username, data.address, data.avatarUrl);
-      });
-  }
+      const result = (await getAddressInfo(publicKey)) || { balance: 0, username: '', address: '', avatarUrl: '' };
+
+      // Update balance UI
+      const balanceTag = $("#balance>b");
+      if (balanceTag) {
+        balanceTag.innerHTML = `${prettifyNumber(result.balance)} BEBE`;
+      }
+
+      updateAvatarSrcAndUserName(result.username, result.address, result.avatarUrl);
+    }
 };
 
 const updateAvatarSrcAndUserName = (
@@ -229,30 +242,6 @@ const buildWalletsUI = () => {
   return `${ui.join("")} ${footer}`;
 };
 
-const bebeTokenBalance = async () => {
-  try {
-    return await getTokenBalance(
-      localStorage.getItem("publicKey"),
-      BEBE_MINT_ADDRESS
-    );
-  } catch (error) {
-    return 0;
-  }
-};
-
-const refreshTokenBalance = async () => {
-  let balance = 0;
-  if (localStorage.getItem("publicKey")) {
-    balance = await bebeTokenBalance();
-  }
-
-  const balanceTag = $("#balance>b");
-
-  if (balanceTag) {
-    balanceTag.innerHTML = `${prettifyNumber(balance)} BEBE`;
-  }
-};
-
 const handleProfileHeader = () => {
   $("#account").addEventListener("click", (e) => {
     ($("#profile") as any).style = "display: block !important";
@@ -277,7 +266,6 @@ const handleProfileHeader = () => {
 
 const startup = () => {
   checkSession();
-  refreshTokenBalance();
   handleProfileHeader();
 
   const loginButton = $("#login");
@@ -314,7 +302,14 @@ const startup = () => {
     const result = await fetch("/address-info-form", {
       method: "POST",
       body: formData,
-    }).then((res) => res.json());
+    }).then((res) => {
+      if (res.status === 409) {
+        overlayMSG('Username is taken or not allowed.');
+      };
+      if (res.status === 422) {
+        overlayMSG('You are banned.');
+      };
+      return res.json()});
     result.address ? ($("#profile").style.display = "") : null;
     $("#loader").style.display = "none";
 
@@ -332,7 +327,7 @@ globalThis.connectToWallet = connectToWallet;
 export {
   connectToWallet,
   disconnectWallet,
+  getAddressInfo,
   getAllAvailableWallets,
-  bebeTokenBalance,
   buildWalletsUI,
 };

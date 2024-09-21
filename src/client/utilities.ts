@@ -1,11 +1,12 @@
-/// <reference types="user-agent-data-types" />
+//<reference types="user-agent-data-types" />
 
 import { $ } from "./ui.js";
+import { showModal } from "./modal.js";
 
 const browserType = () => {
   const userAgent =
     navigator.userAgent ||
-    navigator?.userAgentData?.brands?.map((b) => b.brand).join(" ") ||
+    (navigator as any)?.userAgentData?.brands?.map((b) => b.brand).join(" ") ||
     "";
 
   if (/chrome|chromium|crios/i.test(userAgent) && !/edg/i.test(userAgent)) {
@@ -103,7 +104,7 @@ const countdown = (seconds: number, divId: string) => {
     const element = $(divId);
     if (!element) {
       clearInterval(intervalId);
-      console.error(`Element with ID ${divId} not found`);
+      // console.error(`Element with ID ${divId} not found`);
       //$("#posts").innerHTML = '(ℹ) No posts in this category.'
       return;
     }
@@ -119,6 +120,22 @@ const currentUnixTimestamp = () => {
   return Math.floor(Date.now() / 1000);
 };
 
+const overlayMSG = (text : string) => {
+  const html = `
+  <div class="overlayMessage">${text}</div>
+  `;
+  $("#loader").style.display = "none";
+  showModal(html);
+}
+
+const debounce = (func: Function, wait: number) => {
+  let timeout: number | undefined;
+  return function (...args: any[]) {
+    clearTimeout(timeout);
+    timeout = window.setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 export {
   browserType,
   prettifyNumber,
@@ -127,4 +144,6 @@ export {
   wait,
   countdown,
   currentUnixTimestamp,
+  overlayMSG,
+  debounce
 };

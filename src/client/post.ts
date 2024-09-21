@@ -13,6 +13,7 @@ import {
   formatDate,
   shorthandAddress,
   wait,
+  overlayMSG
 } from "./utilities.js";
 import { attachListenersToVote } from "./vote.js";
 import { features } from "./welcome.js";
@@ -70,13 +71,25 @@ const handlePostSubmit = async () => {
     (votes || []).forEach((vote: string) => formData.append("votes[]", vote));
 
     try {
-      const post = await fetch("/post", {
+      const response = await fetch("/post", {
         method: "POST",
         body: formData,
-      }).then((response) => response.json());
-
+      });
+    
+      // Check if the status is 422
+      if (response.status === 422) {
+        overlayMSG('You are banned.');
+        return;
+      }
+    
+      // Check if the response is OK (status code 200-299)
+      if (!response.ok) {
+        throw new Error(`An error occurred: ${response.statusText}`);
+      }
+    
+      const post = await response.json();
+    
       if (post.id) {
-
         $("#post-form-container").style.display = "";
         $("body").style.overflow = "";
         $(".shortMessage").innerHTML =
@@ -85,6 +98,8 @@ const handlePostSubmit = async () => {
         window.location.href = `/?id=${post.id}&title=${post.title}`;
       }
     } catch (error) {
+      // Handle further errors here
+      console.error(error.message);
       $(".form_error").innerHTML = error.message;
     }
   });
@@ -188,12 +203,19 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
+const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: any) => {
+
+  // Ensure votes and voters exist before accessing them
+  if (!votes || !votes.voters) {
+    console.error("Votes data or voters list is missing:", votes);
+  }
+
   let deletePost = "";
   const publicKey = localStorage.getItem("publicKey");
   if (publicKey === post.walletAddress || ADMINS.includes(publicKey)) {
     deletePost = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
+
   let banAddress = "";
   if (ADMINS.includes(publicKey)) {
     banAddress = `
@@ -225,7 +247,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     closedClass = "";
   }
 
-  if (votes.voters?.includes?.(publicKey)) {
+  if (votes?.voters?.includes?.(publicKey)) {
     voteBtnText = "YOU VOTED";
   }
 
@@ -273,7 +295,7 @@ const drawPostDetails = ({ post, address, comments, votes, ADMINS }: any) => {
     (post.quorum / 100) * post.totalCurrentAddresses
   );
 
-  const totalMembers = `<b>${votes.voters?.length || 0}</b>/${usersNeeded} users (${
+  const totalMembers = `<b>${votes?.voters?.length || 0}</b>/${usersNeeded} users (${
     post.quorum
   }%)`;
 
@@ -376,30 +398,42 @@ const deletePost = async (post: any) => {
     return;
   }
 
-  const result = await fetch("/delete-post", {
-    method: "DELETE",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id: post.id }),
-  })
-    .then((response) => response.json())
-    .catch((err) => {
-      console.log(err);
+  try {
+    const response = await fetch("/delete-post", {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: post.id }),
     });
 
-  // if (result.error) {
-  //   // TO-DO
-  //   // Prompt error message to the user
-  //   return;
-  // }
+    // Check if the status is 422
+    if (response.status === 422) {
+      overlayMSG('You are banned.');
+      return;
+    }
 
-  $(".shortMessage").innerHTML =
-    '<div class="quickText"><h2 style="color: red">POST DELETED</h2></div>';
+    // Check if the status is 422
+    if (response.status === 409) {
+      console.log('There is a conflict error.');
+    }
 
-  await wait();
-  window.location.href = "/";
+    const result = await response.json();
+
+    if (result.error) {
+      console.log(result.error); // Log the error for debugging
+    }
+
+    // Display success message and redirect
+    $(".shortMessage").innerHTML =
+      '<div class="quickText"><h2 style="color: red">POST DELETED</h2></div>';
+    await wait();
+    window.location.href = "/";
+  } catch (err) {
+    console.error(err);
+    alert(`Error: ${err.message || "An unexpected error occurred."}`);
+  }
 };
 
 const drawPost = (post: any) => {

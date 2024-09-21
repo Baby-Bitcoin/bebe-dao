@@ -1,12 +1,16 @@
 {
   "name": "bebe-dao",
-  "version": "0.1",
+  "version": "0.2",
   "description": "BEBE DAO",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js --ignore data/",
-    "start-server": "node app.js",
+    "go": "node --no-deprecation app.js",
+    "nodemonitor": "nodemon app.js --ignore data/",
+    "build": "tsc -p tsconfig.client.json",
+    "build2": "tsc -p tsconfig.client.json && tsc -p tsconfig.server.json",
+    "watch": "concurrently \"tsc -w -p tsconfig.client.json\"",
+    "watch2": "concurrently \"tsc -w -p tsconfig.client.json\" \"tsc -w -p tsconfig.server.json\"",
     "svgo": "npx svgo --multipass public_html/svgs/trust.svg",
     "tsc-watch": "tsc --watch --project tsconfig.json",
     "redis-rejson": "docker run -p 6379:6379 --name redis-rejson redislabs/rejson:latest"
@@ -14,32 +18,27 @@
   "author": "@dyablohunter, @terfender",
   "license": "GPL 3.0",
   "devDependencies": {
-    "@types/node": "20.0.0",
+    "@types/node": "^22.5.5",
+    "concurrently": "^9.0.1",
     "nodemon": "^3.1.4",
     "user-agent-data-types": "^0.4.2"
   },
-  "nodemonConfig": {
-    "ignore": [
-      "data/*"
-    ]
-  },
   "dependencies": {
+    "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.3",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "ejs": "^3.1.8",
     "express": "^4.17.3",
     "express-handlebars": "^8.0.1",
     "express-rate-limit": "^7.4.0",
     "express-session": "^1.18.0",
-    "https": "^1.0.0",
-    "ioredis": "^5.4.1",
     "joi": "^17.13.3",
     "multer": "^1.4.5-lts.1",
     "path": "^0.12.7",
-    "pug": "^3.0.2",
     "sharp": "^0.33.5",
     "svgo": "^3.0.0",
     "ts-node": "^10.9.1"
+  },
+  "resolutions": {
+  "punycode": "^2.1.1"
   }
 }

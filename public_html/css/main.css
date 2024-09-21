@@ -941,6 +941,7 @@ footer img {
 
 .description ol li * {
   cursor: pointer;
+  vertical-align: bottom;
 }
 
 .description p {
@@ -1124,6 +1125,12 @@ footer img {
   opacity: 0.777;
   text-transform: lowercase;
   font-size: 14px;
+  transition: 0.23s;
+  will-change: transform;
+}
+
+.index-user:hover {
+  transform: scale(2);
 }
 
 .user {

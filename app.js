@@ -1,15 +1,17 @@
+const dotenv = require("dotenv");
+dotenv.config({
+  path: ".env",
+});
+
 const path = require("path");
 const express = require("express");
 const session = require("express-session");
-
 const Joi = require("joi"); // this is for data validation sent from front-end
-const fs = require("fs"); // this is for saving or reading files to the server
-const { createStorage } = require("./src/server/imageProcessing");
+const { createStorage } = require("./src/server/image-processing");
 const Post = require("./src/server/post");
 const Comment = require("./src/server/comment");
 const Vote = require("./src/server/vote"); // functions ?  variables
 const { addressInfo } = require("./src/server/address");
-const { env } = require("process");
 const { createRateLimiter } = require("./src/server/limiter");
 const {
   banStatus,
@@ -35,7 +37,7 @@ const addressStorage = createStorage(
 const app = express();
 app.use(
   session({
-    secret: env.SESSION_KEY, // Replace with a secure key
+    secret: process.env.SESSION_KEY, // Replace with a secure key
     resave: false, // Prevents session from being saved back to the session store if it wasn't modified
     saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store
     cookie: { secure: false }, // Set to true if using HTTPS
@@ -49,8 +51,13 @@ app.use(express.static(path.join(__dirname, "public_html")));
 
 app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   const data = await Post.find(req.params.postId);
-  data.ADMINS = ADMINS;
 
+  if (!data) {
+    // Handle the case where the post is not found
+    return res.status(404).send({ error: "Post not found" });
+  }
+
+  data.ADMINS = ADMINS;
   res.send(data);
 });
 
@@ -81,7 +88,7 @@ app.post(
     const { error } = schema.validate(req.body, () => {});
 
     // TO-DO:
-    // Make sure wallet has at least $MINI_TOKEN_BALANCE_FOR_POST to post
+    // Make sure wallet has at least $MIN_TOKEN_BALANCE_FOR_POST to post
 
     if (error) {
       res.status(401).send(error.details[0].message);
@@ -150,6 +157,7 @@ app.delete(
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
     address: Joi.string().max(58).required(),
+    login: Joi.string().max(3),
   });
 
   const { error } = schema.validate(req.body, () => {});
@@ -238,7 +246,7 @@ app.post(
       content: Joi.string().min(2).max(1001).required(),
     });
 
-    const { error } = schema.validate(req.body, () => {});
+    const { error } = schema.validate(req.body);
 
     if (error) {
       res.status(401).send(error.details[0].message);
@@ -246,13 +254,14 @@ app.post(
     }
 
     try {
-      const comment = new Comment({
+      const newComment = new Comment({
         ...req.body,
         walletAddress: req.session.publicKey,
       });
-      await comment.save();
 
-      res.send(comment);
+      await newComment.save();
+
+      res.send(newComment);
     } catch (error) {
       res.status(409).send({ error: error.message });
     }
@@ -260,6 +269,6 @@ app.post(
 );
 
 app.set("trust proxy", 1);
-app.listen(env.APP_PORT, () => {
-  console.log("Baby DAO is running on port " + env.APP_PORT);
-});
+
+app.listen(process.env.APP_PORT, () => {
+  console.log("Baby DAO is running on port " + process.env.APP_PORT);
