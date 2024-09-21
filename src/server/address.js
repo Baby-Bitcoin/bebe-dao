@@ -31,9 +31,9 @@ const addressInfo = async function (data, avatarUrl = null) {
   // Check if username is used
   const allUsers = await dbConnection.getIndexContent(InMemoryDB.ADDRESSES_DB); // Get all objects in ADDRESSES_DB
   
-  for (const key in allUsers) { // Use for..in to iterate over object keys
+  for (const key in allUsers) {
     const user = allUsers[key];
-    // Check if the 'username' field exists and matches the desired username
+    // Check if the 'username' field exists
     if (user.username && user.username === data.username) {
       throw new Error(`${data.username} is taken.`);
     }
@@ -67,21 +67,8 @@ const addressInfo = async function (data, avatarUrl = null) {
     shouldSave = true; // Avatar has changed, so save
   }
 
-  // Handle avatarUrl update and remove the old avatar file if it exists
+  // Handle username update
   if (data.username && keyObject.username !== data.username) {
-    keyObject.username = data.username;
-    shouldSave = true; // Avatar has changed, so save
-  }
-
-
-  // Handle avatarUrl update and remove the old avatar file if it exists
-  if (avatarUrl && avatarUrl !== keyObject.avatarUrl) {
-    const oldAvatarUrl = keyObject.avatarUrl;
-    if (oldAvatarUrl) {
-      fs.rmSync(path.join(AVATAR_PREFIX, oldAvatarUrl), { force: true });
-      fs.rmSync(path.join(AVATAR_PREFIX + '/thumbnails', oldAvatarUrl), { force: true });
-    }
-    keyObject.avatarUrl = avatarUrl;
     keyObject.username = data.username;
     shouldSave = true; // Avatar has changed, so save
   }
