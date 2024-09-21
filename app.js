@@ -269,6 +269,6 @@ app.post(
 );
 
 app.set("trust proxy", 1);
+
 app.listen(process.env.APP_PORT, () => {
   console.log("Baby DAO is running on port " + process.env.APP_PORT);
-});
