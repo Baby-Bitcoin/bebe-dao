@@ -51,7 +51,7 @@ const addressInfo = async function (data, avatarUrl = null) {
 
   // Determine if we should update session based on actual time difference
   const lastSession = keyObject.lastSessionAt || 0;
-  if (data.login === 'yes' && (nowTime - lastSession) > sessionTimeout) {
+  if ((nowTime - lastSession) > sessionTimeout) {
     keyObject.lastSessionAt = nowTime;
     shouldSave = true; // Legitimate session update based on timeout
   }

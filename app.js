@@ -156,8 +156,7 @@ app.delete(
 
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({
-    address: Joi.string().max(58).required(),
-    login: Joi.string().max(3),
+    address: Joi.string().max(58).required()
   });
 
   const { error } = schema.validate(req.body, () => {});
@@ -272,3 +271,4 @@ app.set("trust proxy", 1);
 
 app.listen(process.env.APP_PORT, () => {
   console.log("Baby DAO is running on port " + process.env.APP_PORT);
+});
