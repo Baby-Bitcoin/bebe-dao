@@ -313,7 +313,7 @@ const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: a
                 <img src="${getAddressAvatarPostDefault(address)}" />
               </span>
               <span class="user" title="Username">
-                ${shorthandAddress(post.walletAddress, 4)}
+                ${post.username || shorthandAddress(post.walletAddress, 4)}
               </span>
             </div>
           </a>

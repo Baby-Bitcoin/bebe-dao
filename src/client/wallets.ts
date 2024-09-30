@@ -1,6 +1,6 @@
 import { $, $$ } from "./ui.js";
 import { closeModal, showModal } from "./modal.js";
-import { browserType, prettifyNumber, overlayMSG } from "./utilities.js";
+import { browserType, prettifyNumber, overlayMSG, shorthandAddress } from "./utilities.js";
 import { checkFileProperties, handleUploadedFile } from "./image-select.js";
 
 declare global {
@@ -12,24 +12,29 @@ declare global {
   }
 }
 
+const isMobile = () => {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+};
+
 const getWalletExtensionDownloadUrl = (walletName: string): string | null => {
   const bank = {
     Chrome: {
-      Phantom:
-        "https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa?hl=en",
-      Solflare:
-        "https://chromewebstore.google.com/detail/solflare-wallet/bhhhlbepdkbapadjdnnojkbgioiodbic?hl=en",
-      "Trust Wallet":
-        "https://chromewebstore.google.com/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph",
+      Phantom: "https://chromewebstore.google.com/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa?hl=en",
+      Solflare: "https://chromewebstore.google.com/detail/solflare-wallet/bhhhlbepdkbapadjdnnojkbgioiodbic?hl=en",
+      "Trust Wallet": "https://chromewebstore.google.com/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph",
     },
     Firefox: {
       Phantom: "https://addons.mozilla.org/en-US/firefox/addon/phantom-app/",
-      Solflare:
-        "https://addons.mozilla.org/en-US/firefox/addon/solflare-wallet/",
+      Solflare: "https://addons.mozilla.org/en-US/firefox/addon/solflare-wallet/",
+    },
+    Mobile: {
+      Phantom: "https://phantom.app/ul/login", // Phantom deep link for mobile
+      Solflare: "https://solflare.com/app", // Solflare deep link for mobile
     },
   };
 
-  return bank[browserType()]?.[walletName];
+  const browser = isMobile() ? "Mobile" : browserType(); // Use Mobile for mobile devices
+  return bank[browser]?.[walletName] || null;
 };
 
 const getAllAvailableWallets = (): any[] => {
@@ -47,18 +52,7 @@ const getAllAvailableWallets = (): any[] => {
       adapter: window?.solflare,
       extensionUrl: getWalletExtensionDownloadUrl("Solflare"),
     },
-    {
-      name: "Trust Wallet",
-      logo: "/svgs/trust.svg",
-      adapter: window?.trustWallet?.solana,
-      extensionUrl: getWalletExtensionDownloadUrl("Trust Wallet"),
-    },
-    {
-      name: "WalletConnect",
-      logo: "/svgs/walletconnect.svg",
-      adapter: window?.walletConnect?.solana,
-      extensionUrl: getWalletExtensionDownloadUrl("WalletConnect"),
-    },
+    // Add other wallets as needed
   ];
 
   return wallets;
@@ -156,7 +150,7 @@ const connectToWallet = async (walletName: string) => {
       $("#account").classList.remove("hide");
       $("#add").style.display = "block"; // on submit for Post we need to check min balance
       const publicKey = wallet.adapter.publicKey.toBase58();
-      avatarName.innerHTML = publicKey;
+      avatarName.innerHTML = shorthandAddress(publicKey, 4);
       localStorage.setItem("publicKey", publicKey);
       localStorage.setItem("connectedWallet", walletName);
 
@@ -182,7 +176,7 @@ const updateAvatarSrcAndUserName = (
   const userNameElements = $$(".userName") as NodeListOf<HTMLElement>;
 
   userNameElements.forEach((el) => {
-    el.textContent = userName || address;
+    el.textContent = userName || shorthandAddress(address, 4);
   });
 
   const avatarElements = $$(".userAvatar") as NodeListOf<HTMLImageElement>;

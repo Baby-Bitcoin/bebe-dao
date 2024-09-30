@@ -70,6 +70,7 @@ const attachListenersToVote = async (post: any) => {
       const voteResult = await response.json();
 
       // Actions if success (only if there are no errors or status 422)
+      $("#voting span:first-of-type").textContent = "YOU VOTED";
       $("#loader").style.display = "none";
       let currentVotes = $("#total-users b").textContent;
       $("#total-users b").textContent = `${Number(currentVotes) + 1}`;
