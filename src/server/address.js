@@ -38,12 +38,15 @@ const addressInfo = async function (data, avatarUrl = null) {
       throw new Error(`${data.username} is taken.`);
     }
   }
+
+  const balance = await getTokenBalance(data.address);
   
   // Initialize keyObject if it doesn't exist (new registration)
   if (!keyObject) {
     keyObject = {
       registeredAt: nowTime,
       lastSessionAt: nowTime,
+      balance: balance
       // Initialize other properties if needed
     };
     shouldSave = true; // New registration, so we need to save
@@ -53,6 +56,7 @@ const addressInfo = async function (data, avatarUrl = null) {
   const lastSession = keyObject.lastSessionAt || 0;
   if ((nowTime - lastSession) > sessionTimeout) {
     keyObject.lastSessionAt = nowTime;
+    keyObject.balance = balance;
     shouldSave = true; // Legitimate session update based on timeout
   }
 
@@ -88,7 +92,7 @@ const addressInfo = async function (data, avatarUrl = null) {
     await dbConnection.setKey(InMemoryDB.ADDRESSES_DB, data.address, keyObject);
   }
 
-  const balance = await getTokenBalance(data.address);
+
 
   return {
     ...keyObject,

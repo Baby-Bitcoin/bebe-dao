@@ -129,6 +129,11 @@ class InMemoryDB {
     async getAllKeys(index) {
         return Object.keys(this.indexes[index] || {});
     }
+    
+    // needs testing
+    async getIndexContent(index) {
+        return this.indexes[index];
+    }
 
     /**
      * Retrieves `n` keys from a specific index, with pagination and order options.
