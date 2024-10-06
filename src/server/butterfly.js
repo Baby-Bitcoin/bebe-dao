@@ -129,7 +129,7 @@ class InMemoryDB {
     async getAllKeys(index) {
         return Object.keys(this.indexes[index] || {});
     }
-    
+
     // needs testing
     async getIndexContent(index) {
         return this.indexes[index];
@@ -153,10 +153,6 @@ class InMemoryDB {
         // Calculate the offset and return the slice
         const start = page * n;
         return orderedKeys.slice(start, start + n);
-    }
-
-    async getIndexContent(index) {
-        return this.indexes[index];
     }
 
     /**
