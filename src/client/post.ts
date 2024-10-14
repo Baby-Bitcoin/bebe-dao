@@ -95,7 +95,7 @@ const handlePostSubmit = async () => {
         $(".shortMessage").innerHTML =
           '<div class="quickText"><h2 style="color: green">POST SENT</h2></div>';
         await wait();
-        window.location.href = `/?id=${post.id}&title=${post.title}`;
+        window.location.href = `/?id=${post.id}&title=${post.title.replace(/\s+/g, '-').replace(/-$/, '')}`;
       }
     } catch (error) {
       // Handle further errors here
