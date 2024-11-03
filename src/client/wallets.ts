@@ -74,7 +74,7 @@ const disconnectWallet = async (walletName: string = "") => {
     return;
   }
 
-  const disconnected = await wallet.adapter.disconnect();
+  const disconnected = await wallet.adapter.disconnect;
 
   if (disconnected) {
     closeModal();

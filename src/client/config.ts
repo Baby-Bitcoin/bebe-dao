@@ -1,5 +1,5 @@
 const __DEV__ = true;
-const RPC_URL = "https://winter-capable-firefly.solana-mainnet.quiknode.pro/7c742bf076d345847ec8ed4289607694598df0b8/";
+const RPC_URL = "https://solitary-winter-friday.solana-mainnet.quiknode.pro/a4619eaa0a67454c1687c6041fba9d82a13d7896/";
 const BEBE_MINT_ADDRESS = "HRzN8zrPp6HT8nmHoRrDpGbhVnFbbya5cMzaVGWVpump";
 const BEBE_SYMBOL = "BEBE";
 const WSOLMint = "So11111111111111111111111111111111111111112";

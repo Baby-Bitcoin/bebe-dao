@@ -27,7 +27,14 @@ const browserType = () => {
   }
 };
 
-const prettifyNumber = (num) => {
+const prettifyNumber = (num: any) => {
+  // Convert num to a number in case it's a string or another type
+  num = Number(num);
+  if (isNaN(num)) {
+    console.error(`Invalid number: ${num}`);
+    return "NaN";
+  }
+
   const absNum = Math.abs(num);
   const sign = num < 0 ? "-" : "";
 
