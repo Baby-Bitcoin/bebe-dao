@@ -4,6 +4,7 @@
   "description": "BEBE DAO",
   "main": "app.js",
   "scripts": {
+    "start": "npm run go",
     "test": "echo \"Error: no test specified\" && exit 1",
     "go": "node --no-deprecation app.js",
     "nodemonitor": "nodemon app.js --ignore data/",
@@ -19,13 +20,14 @@
   "license": "GPL 3.0",
   "devDependencies": {
     "@types/node": "^22.5.5",
-    "concurrently": "^9.0.1",
+    "concurrently": "^9.1.0",
     "nodemon": "^3.1.4",
     "user-agent-data-types": "^0.4.2"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.3",
+    "butterfly.js": "^2.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.17.3",
     "express-handlebars": "^8.0.1",
@@ -39,6 +41,6 @@
     "ts-node": "^10.9.1"
   },
   "resolutions": {
-  "punycode": "^2.1.1"
+    "punycode": "^2.1.1"
   }
 }

@@ -61,10 +61,21 @@ app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   res.send(data);
 });
 
+
+//updated post route for pagination logic
 app.get("/posts", createRateLimiter(100, 15), async (req, res) => {
-  const posts = await Post.all(req.query);
-  res.send(posts);
+    try {
+        const { page, limit, type, address, query } = req.query;
+        const filters = { type, address, query };
+        const postsData = await Post.all(filters, { page, limit });
+
+        res.send(postsData);
+    } catch (error) {
+        console.error("Error fetching posts:", error);
+        res.status(500).send({ error: "Failed to fetch posts." });
+    }
 });
+
 
 app.post(
   "/post",
@@ -139,20 +150,26 @@ app.post(
   }
 );
 
-app.delete(
-  "/delete-post",
-  createRateLimiter(100, 15),
-  banStatus,
-  publicKeyIsRequired,
-  async (req, res) => {
-    try {
-      await Post.delete(req.body.id, req.session.publicKey);
-      res.status(202).send({ success: true });
-    } catch (error) {
-      res.status(409).send({ error: error.message });
+
+//updated route with admin only permissions
+app.delete("/delete-post", async (req, res) => {
+  try {
+    const { id } = req.body;
+    const publicKey = req.headers["public-key"]; // Fetch public key from headers
+
+    // Ensure the user is an admin
+    if (!ADMINS.includes(publicKey)) {
+      return res.status(403).json({ error: "Not authorized" });
     }
+
+    await Post.delete(id, publicKey);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: error.message });
   }
-);
+});
+
 
 app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   const schema = Joi.object({

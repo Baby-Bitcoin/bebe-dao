@@ -13,7 +13,8 @@ import {
   formatDate,
   shorthandAddress,
   wait,
-  overlayMSG
+  overlayMSG,
+  getQueryParams
 } from "./utilities.js";
 import { attachListenersToVote } from "./vote.js";
 import { features } from "./welcome.js";
@@ -210,11 +211,15 @@ const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: a
     console.error("Votes data or voters list is missing:", votes);
   }
 
-  let deletePost = "";
+//Added Admin Check Before Rendering
+  let deletePost = ""; // Initialize as empty
   const publicKey = localStorage.getItem("publicKey");
-  if (publicKey === post.walletAddress || ADMINS.includes(publicKey)) {
+  
+  // Show delete button ONLY if the user is an admin
+  if (ADMINS.includes(publicKey)) {
     deletePost = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
+  
 
   let banAddress = "";
   if (ADMINS.includes(publicKey)) {
@@ -388,6 +393,7 @@ const attachListenersToPost = (post: any, address: any = {}) => {
   }
 };
 
+//updated for only admins to delete the post
 const deletePost = async (post: any) => {
   const promptString = prompt(
     "Are you sure you want to delete this post?",
@@ -404,6 +410,7 @@ const deletePost = async (post: any) => {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "public-key": localStorage.getItem("publicKey"), // Pass public key will be used to check if admins
       },
       body: JSON.stringify({ id: post.id }),
     });
@@ -417,6 +424,12 @@ const deletePost = async (post: any) => {
     // Check if the status is 422
     if (response.status === 409) {
       console.log('There is a conflict error.');
+    }
+
+//Allowed for admins only
+    if (response.status === 403) {
+      alert("You are not authorized to delete this post.");
+      return;
     }
 
     const result = await response.json();
@@ -435,6 +448,7 @@ const deletePost = async (post: any) => {
     alert(`Error: ${err.message || "An unexpected error occurred."}`);
   }
 };
+
 
 const drawPost = (post: any) => {
   let linkTitle = "";
@@ -493,42 +507,86 @@ const drawPost = (post: any) => {
   $("#posts").innerHTML += htmlStr;
 };
 
-const postActions = async (filters: any = {}) => {
+//updated for pagination
+const postActions = async (filters: any = {}, page: number = 1, limit: number = 10) => {
   $("#select-type").style.display = "block";
   features === "hidden"
     ? ($(".welcome-info").style.display = "none")
     : ($(".welcome-info").style.display = "block");
 
-  // clear all items
+  // Clear all items
   $("#posts").innerHTML = "Loading posts ...";
 
-  const params = Object.keys(filters).map((key) => `${key}=${filters[key]}`);
+  const params = Object.keys(filters)
+    .map((key) => `${key}=${filters[key]}`)
+    .join("&");
 
-  if (filters.type == "all" && Object.keys(filters).length == 1) {
-    history.pushState({}, null, "/");
-  } else {
-    history.pushState({}, null, `/?${params.join("&")}`);
+  const url = `/posts?${params}&page=${page}&limit=${limit}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    $("#loader").style.setProperty("display", "none");
+
+    // Clear posts container and render posts
+    $("#posts").innerHTML = "";
+    data.posts.forEach((post: any) => {
+      drawPost(post), data.ADMINS;
+    });
+
+    // Update pagination UI
+    renderPagination(data.totalPages, data.currentPage);
+
+    // Display query details if any
+    if (filters.query || filters.tag || filters.address) {
+      $(".query-text").innerHTML = `<b>${filters.query || filters.tag || filters.address}</b> - returned ${data.posts.length} results.`;
+    }
+
+    attachListenersToAddresses();
+
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    $("#posts").innerHTML = "An error occurred while loading posts.";
   }
-
-  const posts = await fetch(`/posts?${params.join("&")}`).then((response) =>
-    response.json()
-  );
-
-  $("#loader").style.setProperty("display", "none");
-
-  $("#posts").innerHTML = "";
-  posts.forEach((post: any, index: number) => {
-    drawPost(post);
-  });
-
-  if (filters.query || filters.tag || filters.address) {
-    $(".query-text").innerHTML = `<b>${
-      filters.query || filters.tag || filters.address
-    }</b> - returned ${posts.length} results.`;
-  }
-
-  attachListenersToAddresses();
 };
+
+
+const renderPagination = (totalPages: number, currentPage: number) => {
+  const paginationContainer = $("#pagination");
+  if (!paginationContainer) return;
+
+  let paginationHTML = "";
+
+  // Previous Page Button
+  if (currentPage > 1) {
+    paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">Previous</button>`;
+  }
+
+  // Page Numbers
+  for (let i = 1; i <= totalPages; i++) {
+    paginationHTML += `<button class="pagination-btn ${
+      i === currentPage ? "active" : ""
+    }" data-page="${i}">${i}</button>`;
+  }
+
+  // Next Page Button
+  if (currentPage < totalPages) {
+    paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">Next</button>`;
+  }
+
+  paginationContainer.innerHTML = paginationHTML;
+
+  // Attach click listeners to pagination buttons
+  $$(".pagination-btn").forEach((button: HTMLElement) => {
+    button.addEventListener("click", (event) => {
+      const page = parseInt((event.target as HTMLElement).dataset.page);
+      postActions(currentPostsFilters(), page);
+    });
+  });
+};
+
+//
 
 const loadSinglePost = async (postId: number) => {
   try {
@@ -566,8 +624,17 @@ document.onreadystatechange = () => {
     initialized = true;
     handlePostSubmit();
     postFormListener();
+
+     // Check if the URL contains a post id
+     const postId = getQueryParams("id");
+     if (postId) {
+       loadSinglePost(parseInt(postId));
+     } else {
+       postActions(currentPostsFilters(), 1);
+     }
   }
 };
+
 
 export {
   postActions,
