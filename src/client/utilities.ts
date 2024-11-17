@@ -143,6 +143,14 @@ const debounce = (func: Function, wait: number) => {
   };
 }
 
+//added query selector for pagination logic
+const getQueryParams = (key: string): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key);
+};
+
+
+
 export {
   browserType,
   prettifyNumber,
@@ -152,5 +160,6 @@ export {
   countdown,
   currentUnixTimestamp,
   overlayMSG,
-  debounce
+  debounce,
+  getQueryParams
 };

@@ -70,52 +70,69 @@ module.exports = class Post {
 
     return { post, address, votes, comments };
   }
+  
 
-  static async all(filters = {}) {
+// updated for pagination
+  static async all(filters = {}, query = {}) {
+    const { page = 1, limit = 10 } = query; // Default to page 1 and 10 posts per page
+    const skip = (page - 1) * limit;
+
     let postKeys = await dbConnection.getAllKeys(InMemoryDB.POSTS_DB);
-  
     let posts = [];
-  
-    for (const key of postKeys) {
-      const post = await dbConnection.getKey(InMemoryDB.POSTS_DB, key);
-      if (post) {
-        posts.push(post);
-      }
-    }
-  
-    // Apply filters if any
-    if (filters.type && filters.type != "all") {
-      posts = posts.filter((post) => post.type == filters.type);
-    }
-  
-    if (filters.address) {
-      posts = posts.filter((post) => post.walletAddress == filters.address);
-    }
-  
-    if (filters.query) {
-      posts = posts.filter((post) =>
-        Boolean(this.queryMatchesPost(filters.query, post))
-      );
-    }
-  
-    for (const post of posts) {
-      const address = await dbConnection.getKey(
-        InMemoryDB.ADDRESSES_DB,
-        post.walletAddress
-      );
-  
-      // Check if the address is null
-      if (address) {
-        post.username = address.username || shorthandAddress(post.walletAddress);
-      } else {
-        post.username = shorthandAddress(post.walletAddress); // Fallback if no address is found
-      }
-    }
-  
-    return posts.reverse();
-  }  
-  
 
+    for (const key of postKeys) {
+        const post = await dbConnection.getKey(InMemoryDB.POSTS_DB, key);
+        if (post) {
+            posts.push(post);
+        }
+    }
+
+    // Apply filters
+    if (filters.type && filters.type !== "all") {
+        posts = posts.filter((post) => post.type === filters.type);
+    }
+
+    if (filters.address) {
+        posts = posts.filter((post) => post.walletAddress === filters.address);
+    }
+
+    if (filters.query) {
+        posts = posts.filter((post) =>
+            Boolean(this.queryMatchesPost(filters.query, post))
+        );
+    }
+
+    // Get total count of posts after applying filters
+    const totalCount = posts.length;
+
+    // Paginate posts
+    const paginatedPosts = posts
+        .slice(skip, skip + parseInt(limit))
+        .map(async (post) => {
+            const address = await dbConnection.getKey(
+                InMemoryDB.ADDRESSES_DB,
+                post.walletAddress
+            );
+
+            if (address) {
+                post.username = address.username || shorthandAddress(post.walletAddress);
+            } else {
+                post.username = shorthandAddress(post.walletAddress); // Fallback
+            }
+
+            return post;
+        });
+
+    // Resolve promises for username additions
+    const resolvedPosts = await Promise.all(paginatedPosts);
+
+    return {
+        posts: resolvedPosts.reverse(),
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: parseInt(page),
+    };
+}
   static areCommentsAllowed(post) {
     return !(post.type == "election" && !this.isPostClosed(post));
   }
