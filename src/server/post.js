@@ -4,6 +4,7 @@ const { ADMINS } = require("./configs");
 const GetComments = require("./get-comments");
 const fs = require("fs");
 const path = require("path");
+const { getTokenBalance } = require("./web3");
 
 const IMAGE_PREFIX = path.join(
   __dirname,
@@ -58,18 +59,21 @@ module.exports = class Post {
     if (!post) {
       return post;
     }
-
+  
+    post.description = await this.parseDescription(post.description);
+  
     const address = await dbConnection.getKey(
       InMemoryDB.ADDRESSES_DB,
       post.walletAddress
     );
-
-    const votes = await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id) || {};
-
+  
+    const votes = (await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id)) || {};
+  
     const comments = await GetComments.findPost(post.id);
-
+  
     return { post, address, votes, comments };
   }
+  
   
 
 // updated for pagination
@@ -132,7 +136,22 @@ module.exports = class Post {
         totalPages: Math.ceil(totalCount / limit),
         currentPage: parseInt(page),
     };
-}
+  }
+
+  static async parseDescription(description) {
+    const matches = description.match(/\[BEBE\](.*?)\[\/BEBE\]/g);
+    if (!matches) return description;
+  
+    for (const match of matches) {
+      const walletAddress = match.replace(/\[BEBE\]|\[\/BEBE\]/g, "");
+      const balance = await getTokenBalance(walletAddress);
+      const balanceString = `Balance of ${walletAddress} is: ${balance} BEBE`;
+      description = description.replace(match, `<span class="wallet-balance">${balanceString}</span>`);
+    }
+  
+    return description;
+  }
+  
   static areCommentsAllowed(post) {
     return !(post.type == "election" && !this.isPostClosed(post));
   }
@@ -179,3 +198,4 @@ module.exports = class Post {
     }
   }
 };
+

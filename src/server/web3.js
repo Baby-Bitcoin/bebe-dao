@@ -88,4 +88,26 @@ const getTokenBalance = async (walletAddress) => {
   }
 };
 
-module.exports = { connection, getTokenBalance };
+
+
+/**
+ * Parses `[BEBE]wallet_address[/BEBE]` syntax and replaces with wallet balances.
+ * @param {string} description - Post description with placeholders.
+ * @returns {Promise<string>} - Updated description with wallet balances.
+ */
+const parseBalancePlaceholder = async (description) => {
+  const matches = description.match(/\[BEBE\](.*?)\[\/BEBE\]/g);
+
+  if (!matches) return description;
+
+  for (const match of matches) {
+    const walletAddress = match.replace(/\[BEBE\]|\[\/BEBE\]/g, "");
+    const balance = await getTokenBalance(walletAddress);
+    const balanceString = `Balance of ${walletAddress} is: ${balance} BEBE`;
+    description = description.replace(match, balanceString);
+  }
+
+  return description;
+};
+
+module.exports = { connection, getTokenBalance, parseBalancePlaceholder };

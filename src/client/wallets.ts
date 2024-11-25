@@ -121,6 +121,22 @@ const getAddressInfo = async (address: string) => {
     });
 };
 
+
+const fetchBEBEBalance = async (walletAddress: string): Promise<string> => {
+  try {
+    const response = await fetch(`/balance?wallet=${walletAddress}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch balance.");
+    }
+    const { balance } = await response.json();
+    return balance || "0";
+  } catch (error) {
+    console.error("Error fetching BEBE balance:", error);
+    return "Balance unavailable";
+  }
+};
+
+
 const connectToWallet = async (walletName: string) => {
     const wallet = getAllAvailableWallets().filter(
       (wallet: any) => wallet.name == walletName
@@ -239,7 +255,8 @@ const buildWalletsUI = () => {
 const handleProfileHeader = () => {
   $("#account").addEventListener("click", (e) => {
     ($("#profile") as any).style = "display: block !important";
-  });
+    addBalanceTrackerToProfile(); // Call the balance tracker function here
+  });  
 
   $("#profile .modal_close").addEventListener("click", (e) => {
     ($("#profile") as any).style = "";
@@ -257,6 +274,27 @@ const handleProfileHeader = () => {
     }
   });
 };
+
+const addBalanceTrackerToProfile = async () => {
+  const publicKey = localStorage.getItem("publicKey");
+  if (!publicKey) return;
+
+  const balance = await fetchBEBEBalance(publicKey);
+
+  const balanceTrackerHTML = `
+    <div id="balance-tracker">
+      <h3>Balance Tracker</h3>
+      <p><strong>Your Wallet Address:</strong> ${shorthandAddress(publicKey, 4)}</p>
+      <p><strong>Your BEBE Balance:</strong> ${balance} BEBE</p>
+    </div>
+  `;
+
+  const profileSection = document.getElementById("profile-balance-tracker");
+  if (profileSection) {
+    profileSection.innerHTML = balanceTrackerHTML;
+  }
+};
+
 
 const startup = () => {
   checkSession();

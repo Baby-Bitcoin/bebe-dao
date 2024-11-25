@@ -204,7 +204,22 @@ const attachListenersToAddresses = () => {
   });
 };
 
-const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: any) => {
+const fetchBalanceForWallet = async (walletAddress: string): Promise<string> => {
+  try {
+    const response = await fetch(`/balance?wallet=${walletAddress}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch balance.");
+    }
+    const { balance } = await response.json();
+    return balance ? `${balance} BEBE` : "0 BEBE";
+  } catch (error) {
+    console.error("Error fetching wallet balance:", error);
+    return "Balance unavailable";
+  }
+};
+
+
+const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = [] }: any) => {
 
   // Ensure votes and voters exist before accessing them
   if (!votes || !votes.voters) {
@@ -220,6 +235,7 @@ const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: a
     deletePost = `<button id="delete-post-${post.id}" class="action-button delete" title="Delete this post"></button>`;
   }
   
+  const walletBalance = await fetchBalanceForWallet(post.walletAddress);
 
   let banAddress = "";
   if (ADMINS.includes(publicKey)) {
@@ -231,6 +247,8 @@ const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: a
       </button>
       `;
   }
+
+
 
   let pollHTML = "";
   const options = post.options;
@@ -337,16 +355,21 @@ const drawPostDetails = ({ post, address, comments, votes = [], ADMINS = [] }: a
             <h1 class="title ${post.type}">${post.title}</h1>
             <div class="description">
               <p>${description}</p>
+              <div class="wallet-balance-section">
+              <p><strong>Wallet Balance:</strong> ${walletBalance}</p>
+            </div>
               <div class="tags">
                 <b>TAGS:</b>
                 <span class="${post.type}">${tagsString}</span>
               </div>
+             
               <div>
                 <b>VOTING OPTIONS:</b>
                 <form id="postVotingOptions">${pollHTML}</form>
               </div>
             </div>
             ${drawPostCommentsSection(post, comments)}
+            
           </div>
         </div>
 
