@@ -127,19 +127,19 @@ app.post(
   }
 );
 
-//balance tracking route
-app.get("/balance", createRateLimiter(100, 15), async (req, res) => {
-  const wallet = req.query.wallet; // Get wallet address from query parameters
-  if (!wallet) {
+app.post("/wallet-balance", async (req, res) => {
+  const { walletAddress } = req.body;
+
+  if (!walletAddress) {
     return res.status(400).json({ error: "Wallet address is required" });
   }
 
   try {
-    const balance = await getTokenBalance(wallet); // Call the function to fetch the balance
+    const balance = await getTokenBalance(walletAddress); // Use the existing function to get balance
     res.json({ balance });
   } catch (error) {
-    console.error("Error fetching balance:", error.message);
-    res.status(500).json({ error: "Failed to fetch balance" });
+    console.error("Error fetching wallet balance:", error.message);
+    res.status(500).json({ error: "Failed to fetch wallet balance" });
   }
 });
 

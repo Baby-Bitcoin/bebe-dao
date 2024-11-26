@@ -1,4 +1,4 @@
-const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
+const { currentUnixTimestamp, shorthandAddress, prettifyNumber } = require("./utilities");
 const { InMemoryDB, dbConnection } = require('./butterfly');
 const { ADMINS } = require("./configs");
 const GetComments = require("./get-comments");
@@ -60,8 +60,9 @@ module.exports = class Post {
       return post;
     }
   
-    post.description = await this.parseDescription(post.description);
-  
+// Parse description for balance placeholders
+post.description = await this.parseDescriptionForBalance(post.description);
+
     const address = await dbConnection.getKey(
       InMemoryDB.ADDRESSES_DB,
       post.walletAddress
@@ -138,19 +139,27 @@ module.exports = class Post {
     };
   }
 
-  static async parseDescription(description) {
-    const matches = description.match(/\[BEBE\](.*?)\[\/BEBE\]/g);
-    if (!matches) return description;
+  static async parseDescriptionForBalance(description) {
+    const balanceRegex = /\[balance\](.*?)\[\/balance\]/g; // Matches [balance]walletaddress[/balance]
+    const matches = [...description.matchAll(balanceRegex)];
+  
+    if (matches.length === 0) return description;
   
     for (const match of matches) {
-      const walletAddress = match.replace(/\[BEBE\]|\[\/BEBE\]/g, "");
-      const balance = await getTokenBalance(walletAddress);
-      const balanceString = `Balance of ${walletAddress} is: ${balance} BEBE`;
-      description = description.replace(match, `<span class="wallet-balance">${balanceString}</span>`);
+      const walletAddress = match[1].trim();
+      const balance = await getTokenBalance(walletAddress); // Fetch balance
+      const formattedBalance = balance
+        ? `${prettifyNumber(balance)} BEBE`
+        : "Balance unavailable";
+      const balanceText = `${walletAddress}: ${formattedBalance}`;
+      description = description.replace(
+        match[0],
+        `<span class="wallet-info">${balanceText}</span>`
+      ); // Replace placeholder
     }
   
     return description;
-  }
+  }  
   
   static areCommentsAllowed(post) {
     return !(post.type == "election" && !this.isPostClosed(post));

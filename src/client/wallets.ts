@@ -170,6 +170,12 @@ const connectToWallet = async (walletName: string) => {
       localStorage.setItem("publicKey", publicKey);
       localStorage.setItem("connectedWallet", walletName);
 
+      // Update wallet address in profile modal
+    const walletAddressElement = $("#connected-wallet-address");
+    if (walletAddressElement) {
+      walletAddressElement.innerText = publicKey;
+    }
+    
       const result = (await getAddressInfo(publicKey)) || { balance: 0, username: '', address: '', avatarUrl: '' };
 
       // Update balance UI
@@ -255,7 +261,7 @@ const buildWalletsUI = () => {
 const handleProfileHeader = () => {
   $("#account").addEventListener("click", (e) => {
     ($("#profile") as any).style = "display: block !important";
-    addBalanceTrackerToProfile(); // Call the balance tracker function here
+    // addBalanceTrackerToProfile(); // Call the balance tracker function here
   });  
 
   $("#profile .modal_close").addEventListener("click", (e) => {
@@ -274,27 +280,6 @@ const handleProfileHeader = () => {
     }
   });
 };
-
-const addBalanceTrackerToProfile = async () => {
-  const publicKey = localStorage.getItem("publicKey");
-  if (!publicKey) return;
-
-  const balance = await fetchBEBEBalance(publicKey);
-
-  const balanceTrackerHTML = `
-    <div id="balance-tracker">
-      <h3>Balance Tracker</h3>
-      <p><strong>Your Wallet Address:</strong> ${shorthandAddress(publicKey, 4)}</p>
-      <p><strong>Your BEBE Balance:</strong> ${balance} BEBE</p>
-    </div>
-  `;
-
-  const profileSection = document.getElementById("profile-balance-tracker");
-  if (profileSection) {
-    profileSection.innerHTML = balanceTrackerHTML;
-  }
-};
-
 
 const startup = () => {
   checkSession();

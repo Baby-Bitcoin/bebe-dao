@@ -310,9 +310,9 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
   $("body").classList.add("postPage");
 
   let description = post.description;
-  description = description
-    .replace(/<script[^>]*>/g, "<code>")
-    .replace(/<\/script>/g, "</code>");
+  // description = description
+  //   .replace(/<script[^>]*>/g, "<code>")
+  //   .replace(/<\/script>/g, "</code>");
 
   const usersNeeded = Math.ceil(
     (post.quorum / 100) * post.totalCurrentAddresses
@@ -355,9 +355,6 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
             <h1 class="title ${post.type}">${post.title}</h1>
             <div class="description">
               <p>${description}</p>
-              <div class="wallet-balance-section">
-              <p><strong>Wallet Balance:</strong> ${walletBalance}</p>
-            </div>
               <div class="tags">
                 <b>TAGS:</b>
                 <span class="${post.type}">${tagsString}</span>
