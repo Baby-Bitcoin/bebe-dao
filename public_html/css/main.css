@@ -1615,3 +1615,10 @@ canvas {
 .pagination-btn:hover {
   background-color: var(--bright-blue);
 }
+.wallet-info {
+  font-weight: bold;
+  color: #4caf50; /* Green for balance */
+  display: block;
+  margin: 8px 0;
+  font-size: 14px;
+}

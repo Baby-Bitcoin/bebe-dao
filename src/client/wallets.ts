@@ -121,6 +121,22 @@ const getAddressInfo = async (address: string) => {
     });
 };
 
+
+const fetchBEBEBalance = async (walletAddress: string): Promise<string> => {
+  try {
+    const response = await fetch(`/balance?wallet=${walletAddress}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch balance.");
+    }
+    const { balance } = await response.json();
+    return balance || "0";
+  } catch (error) {
+    console.error("Error fetching BEBE balance:", error);
+    return "Balance unavailable";
+  }
+};
+
+
 const connectToWallet = async (walletName: string) => {
     const wallet = getAllAvailableWallets().filter(
       (wallet: any) => wallet.name == walletName
@@ -154,6 +170,12 @@ const connectToWallet = async (walletName: string) => {
       localStorage.setItem("publicKey", publicKey);
       localStorage.setItem("connectedWallet", walletName);
 
+      // Update wallet address in profile modal
+    const walletAddressElement = $("#connected-wallet-address");
+    if (walletAddressElement) {
+      walletAddressElement.innerText = publicKey;
+    }
+    
       const result = (await getAddressInfo(publicKey)) || { balance: 0, username: '', address: '', avatarUrl: '' };
 
       // Update balance UI
@@ -239,7 +261,8 @@ const buildWalletsUI = () => {
 const handleProfileHeader = () => {
   $("#account").addEventListener("click", (e) => {
     ($("#profile") as any).style = "display: block !important";
-  });
+    // addBalanceTrackerToProfile(); // Call the balance tracker function here
+  });  
 
   $("#profile .modal_close").addEventListener("click", (e) => {
     ($("#profile") as any).style = "";

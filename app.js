@@ -21,6 +21,8 @@ const {
 const { ADMINS } = require("./src/server/configs");
 const Address = require("./src/server/address");
 
+const { getTokenBalance } = require("./src/server/web3"); // Import the balance-fetching function
+
 // Define storage options for post images and address avatars
 const postStorage = createStorage(
   "./public_html/images/posts",
@@ -55,6 +57,13 @@ app.get("/posts/:postId", createRateLimiter(100, 15), async (req, res) => {
   if (!data) {
     // Handle the case where the post is not found
     return res.status(404).send({ error: "Post not found" });
+  }
+  try {
+    const balance = await getTokenBalance(data.post.walletAddress); // Fetch BEBE balance
+    data.balance = balance; // Attach the balance to the response
+  } catch (error) {
+    console.error("Error fetching balance:", error.message);
+    data.balance = "Balance unavailable"; // Fallback if an error occurs
   }
 
   data.ADMINS = ADMINS;
@@ -117,6 +126,23 @@ app.post(
     res.send(createdPost);
   }
 );
+
+app.post("/wallet-balance", async (req, res) => {
+  const { walletAddress } = req.body;
+
+  if (!walletAddress) {
+    return res.status(400).json({ error: "Wallet address is required" });
+  }
+
+  try {
+    const balance = await getTokenBalance(walletAddress); // Use the existing function to get balance
+    res.json({ balance });
+  } catch (error) {
+    console.error("Error fetching wallet balance:", error.message);
+    res.status(500).json({ error: "Failed to fetch wallet balance" });
+  }
+});
+
 
 app.post(
   "/vote",
@@ -185,9 +211,12 @@ app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
 
   try {
     const address = await addressInfo(req.body);
+    const balance = await getTokenBalance(req.body.address); // Fetch BEBE balance
+    address.balance = balance; // Attach the balance to the response
     req.session.publicKey = address.address;
     res.send(address);
   } catch (error) {
+    console.error("Error fetching address info or balance:", error.message);
     res.status(409).send({ error: error.message });
   }
 });

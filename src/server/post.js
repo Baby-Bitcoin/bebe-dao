@@ -1,9 +1,10 @@
-const { currentUnixTimestamp, shorthandAddress } = require("./utilities");
+const { currentUnixTimestamp, shorthandAddress, prettifyNumber } = require("./utilities");
 const { InMemoryDB, dbConnection } = require('./butterfly');
 const { ADMINS } = require("./configs");
 const GetComments = require("./get-comments");
 const fs = require("fs");
 const path = require("path");
+const { getTokenBalance } = require("./web3");
 
 const IMAGE_PREFIX = path.join(
   __dirname,
@@ -58,18 +59,22 @@ module.exports = class Post {
     if (!post) {
       return post;
     }
+  
+// Parse description for balance placeholders
+post.description = await this.parseDescriptionForBalance(post.description);
 
     const address = await dbConnection.getKey(
       InMemoryDB.ADDRESSES_DB,
       post.walletAddress
     );
-
-    const votes = await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id) || {};
-
+  
+    const votes = (await dbConnection.getKey(InMemoryDB.VOTES_DB, post.id)) || {};
+  
     const comments = await GetComments.findPost(post.id);
-
+  
     return { post, address, votes, comments };
   }
+  
   
 
 // updated for pagination
@@ -132,7 +137,30 @@ module.exports = class Post {
         totalPages: Math.ceil(totalCount / limit),
         currentPage: parseInt(page),
     };
-}
+  }
+
+  static async parseDescriptionForBalance(description) {
+    const balanceRegex = /\[balance\](.*?)\[\/balance\]/g; // Matches [balance]walletaddress[/balance]
+    const matches = [...description.matchAll(balanceRegex)];
+  
+    if (matches.length === 0) return description;
+  
+    for (const match of matches) {
+      const walletAddress = match[1].trim();
+      const balance = await getTokenBalance(walletAddress); // Fetch balance
+      const formattedBalance = balance
+        ? `${prettifyNumber(balance)} BEBE`
+        : "Balance unavailable";
+      const balanceText = `${walletAddress}: ${formattedBalance}`;
+      description = description.replace(
+        match[0],
+        `<span class="wallet-info">${balanceText}</span>`
+      ); // Replace placeholder
+    }
+  
+    return description;
+  }  
+  
   static areCommentsAllowed(post) {
     return !(post.type == "election" && !this.isPostClosed(post));
   }
@@ -179,3 +207,4 @@ module.exports = class Post {
     }
   }
 };
+
