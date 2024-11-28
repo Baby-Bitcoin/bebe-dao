@@ -4,7 +4,7 @@ const { ADMINS } = require("./configs");
 const GetComments = require("./get-comments");
 const fs = require("fs");
 const path = require("path");
-const { getTokenBalance } = require("./web3");
+const { getTokenBalance, getTransactionHistory } = require("./web3");
 
 const IMAGE_PREFIX = path.join(
   __dirname,
@@ -14,6 +14,23 @@ const IMAGE_PREFIX = path.join(
   "images",
   "posts"
 );
+const emojiMapping = [
+  { range: [0, 0.1], emoji: "🦠" },
+  { range: [0.1, 0.25], emoji: "🐚" },
+  { range: [0.25, 0.5], emoji: "🐟" },
+  { range: [0.5, 1], emoji: "🐠" },
+  { range: [1, 2], emoji: "🐡" },
+  { range: [2, 3], emoji: "🪼" },
+  { range: [3, 4], emoji: "🦀" },
+  { range: [4, 5], emoji: "🐙" },
+  { range: [5, 6], emoji: "🦑" },
+  { range: [6, 7], emoji: "🦭" },
+  { range: [7, 8], emoji: "🐋" },
+  { range: [8, 9], emoji: "🐳" },
+  { range: [9, 10], emoji: "🪸" },
+  { range: [10, 11], emoji: "🌊" },
+  { range: [11, 12], emoji: "🧜‍♀️" },
+];
 
 module.exports = class Post {
   constructor(postData) {
@@ -44,7 +61,15 @@ module.exports = class Post {
       quorum: parseInt(postData.quorum),
     };
   }
-
+  static calculateVotingPower(balance, totalSupply) {
+    const percentage = (balance / totalSupply) * 100;
+    const emoji = emojiMapping.find(
+      (e) => percentage >= e.range[0] && percentage < e.range[1]
+    )?.emoji || "🦠"; // Default emoji if no match
+    return { percentage, emoji };
+  }
+  
+  
   async save() {
     this.data.id = await dbConnection.getNewID(InMemoryDB.POSTS_DB);
 
@@ -60,7 +85,10 @@ module.exports = class Post {
       return post;
     }
   
-// Parse description for balance placeholders
+    const balance = await this.validateVotingWeight(post.walletAddress, post.duration || 10);
+    const { percentage, emoji } = this.calculateVotingPower(balance, 1_000_000_000); // Assuming total supply is 1B BEBE
+    post.votingPower = { percentage, emoji }; // Attach voting power details
+    
 post.description = await this.parseDescriptionForBalance(post.description);
 
     const address = await dbConnection.getKey(
@@ -120,8 +148,11 @@ post.description = await this.parseDescriptionForBalance(post.description);
             );
 
             if (address) {
-                post.username = address.username || shorthandAddress(post.walletAddress);
-            } else {
+              const balance = await this.validateVotingWeight(post.walletAddress, post.duration || 10);
+              const { percentage, emoji } = this.calculateVotingPower(balance, 1_000_000_000); // Assuming total supply is 1B BEBE
+              post.votingPower = { percentage, emoji };
+              post.username = `${address.username || shorthandAddress(post.walletAddress)} ${emoji}`;
+                          } else {
                 post.username = shorthandAddress(post.walletAddress); // Fallback
             }
 
@@ -148,10 +179,9 @@ post.description = await this.parseDescriptionForBalance(post.description);
     for (const match of matches) {
       const walletAddress = match[1].trim();
       const balance = await getTokenBalance(walletAddress); // Fetch balance
-      const formattedBalance = balance
-        ? `${prettifyNumber(balance)} BEBE`
-        : "Balance unavailable";
-      const balanceText = `${walletAddress}: ${formattedBalance}`;
+      const { percentage, emoji } = this.calculateVotingPower(balance, 1_000_000_000); // Assuming total supply is 1B BEBE
+      const formattedBalance = balance ? `${prettifyNumber(balance)} BEBE` : "Balance unavailable";
+      const balanceText = `${walletAddress}: ${formattedBalance} ${emoji}`;
       description = description.replace(
         match[0],
         `<span class="wallet-info">${balanceText}</span>`
@@ -159,7 +189,8 @@ post.description = await this.parseDescriptionForBalance(post.description);
     }
   
     return description;
-  }  
+  }
+  
   
   static areCommentsAllowed(post) {
     return !(post.type == "election" && !this.isPostClosed(post));
@@ -168,7 +199,20 @@ post.description = await this.parseDescriptionForBalance(post.description);
   static isPostClosed(post) {
     return post.expiresAt - currentUnixTimestamp() < 0;
   }
-
+  static async validateVotingWeight(walletAddress, reviewPeriod) {
+    const transactionHistory = await getTransactionHistory(walletAddress, reviewPeriod);
+  
+    // Adjusted weight based on deposits and withdrawals
+    let adjustedBalance = transactionHistory.reduce((acc, tx) => {
+      if (tx.type === "DEPOSIT") acc += tx.amount;
+      if (tx.type === "WITHDRAWAL") acc -= tx.amount;
+      return acc;
+    }, await getTokenBalance(walletAddress));
+  
+    return Math.max(0, adjustedBalance); // Ensure balance is non-negative
+  }
+  
+  
   static async delete(postId, publicKey) {
     const post = await dbConnection.getKey(InMemoryDB.POSTS_DB, postId);
     if (!post) {

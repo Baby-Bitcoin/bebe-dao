@@ -226,7 +226,7 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
     console.error("Votes data or voters list is missing:", votes);
   }
 
-//Added Admin Check Before Rendering
+  //Added Admin Check Before Rendering
   let deletePost = ""; // Initialize as empty
   const publicKey = localStorage.getItem("publicKey");
   
@@ -310,9 +310,18 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
   $("body").classList.add("postPage");
 
   let description = post.description;
-  // description = description
-  //   .replace(/<script[^>]*>/g, "<code>")
-  //   .replace(/<\/script>/g, "</code>");
+
+  description = description.replace(
+    /\[balance\](.*?)\[\/balance\]/g,
+    (match, walletAddress) => {
+      const isValidAddress = walletAddress.trim() === post.walletAddress;
+      const balanceDisplay = isValidAddress
+        ? `${post.walletAddress}: ${post.votingPower?.emoji || ""} (${post.votingPower?.percentage.toFixed(2)}%)`
+        : "Invalid address";
+      return `<span class="wallet-info">${balanceDisplay}</span>`;
+    }
+  );
+  
 
   const usersNeeded = Math.ceil(
     (post.quorum / 100) * post.totalCurrentAddresses
@@ -337,10 +346,18 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
               </span>
               <span class="user" title="Username">
                 ${post.username || shorthandAddress(post.walletAddress, 4)}
+                ${post.votingPower?.emoji || ""}
               </span>
             </div>
-          </a>
+            </a>
+            <div class="voting-power-info">
+              <strong>Voting Power:</strong> ${post.votingPower?.emoji || "🦠"} 
+              (${post.votingPower?.percentage.toFixed(2) || "0.00"}%)
+            </div>
+          
           ${banAddress}
+
+
           <div class="content">
             <div class="user_info flex">
               <span class="${post.type} post-type">${post.type}</span>
@@ -355,6 +372,8 @@ const drawPostDetails =async ({ post, address, comments, votes = [], ADMINS = []
             <h1 class="title ${post.type}">${post.title}</h1>
             <div class="description">
               <p>${description}</p>
+
+                      
               <div class="tags">
                 <b>TAGS:</b>
                 <span class="${post.type}">${tagsString}</span>

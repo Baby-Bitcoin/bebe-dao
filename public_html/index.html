@@ -134,6 +134,9 @@
           <div id="profile-wallet-address" class="profile-section">
             <h3>Wallet Address</h3>
             <p id="connected-wallet-address">Loading...</p>
+            <p id="voting-power">
+              Voting Power: <span class="voting-power">Loading...</span>
+            </p>
           </div>
           
           <div class="form_error"></div>
@@ -490,5 +493,63 @@
         valueDisplay.textContent = slider.value + "%";
       }
     </script>
+
+<script>
+  async function fetchVotingPower(walletAddress) {
+    try {
+      const response = await fetch('/wallet-balance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ walletAddress }),
+      });
+      const { balance } = await response.json();
+
+      // Determine emoji based on voting power percentage
+      const emoji =
+        balance < 0.1
+          ? '🦠'
+          : balance < 0.25
+          ? '🐚'
+          : balance < 0.5
+          ? '🐟'
+          : balance < 1
+          ? '🐠'
+          : balance < 2
+          ? '🐡'
+          : balance < 3
+          ? '🪼'
+          : balance < 4
+          ? '🦀'
+          : balance < 5
+          ? '🐙'
+          : balance < 6
+          ? '🦑'
+          : balance < 7
+          ? '🦭'
+          : balance < 8
+          ? '🐋'
+          : balance < 9
+          ? '🐳'
+          : balance < 10
+          ? '🪸'
+          : '🌊';
+
+      document.querySelectorAll('.voting-power').forEach((el) => {
+        el.textContent = emoji;
+      });
+    } catch (error) {
+      console.error('Error fetching voting power:', error);
+    }
+  }
+
+  // Call function for testing or initialization
+  const walletAddress = document.getElementById('connected-wallet-address').textContent;
+  if (walletAddress) {
+    fetchVotingPower(walletAddress.trim());
+  }
+</script>
+
   </body>
 </html>

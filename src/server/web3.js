@@ -110,4 +110,27 @@ const parseBalancePlaceholder = async (description) => {
   return description;
 };
 
-module.exports = { connection, getTokenBalance, parseBalancePlaceholder };
+/**
+ * Fetches the transaction history for a given wallet address.
+ * @param {string} walletAddress - Wallet address for which the transaction history is needed.
+ * @returns {Promise<Object[]>} - List of transactions.
+ */
+const getTransactionHistory = async (walletAddress) => {
+  try {
+    const publicKey = new PublicKey(walletAddress);
+    const confirmedSignatures = await connection.getConfirmedSignaturesForAddress2(publicKey);
+    const transactions = await Promise.all(
+      confirmedSignatures.map(async (signatureInfo) => {
+        const transactionDetail = await connection.getTransaction(signatureInfo.signature, { commitment: "confirmed" });
+        return transactionDetail;
+      })
+    );
+    return transactions;
+  } catch (error) {
+    console.error("Error fetching transaction history:", error.message);
+    return [];
+  }
+};
+
+
+module.exports = { connection, getTokenBalance, parseBalancePlaceholder,   getTransactionHistory };
