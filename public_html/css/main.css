@@ -1622,3 +1622,10 @@ canvas {
   margin: 8px 0;
   font-size: 14px;
 }
+
+.voting-power {
+  font-size: 1.5rem;
+  margin-left: 8px;
+  margin-top: 20px;
+  vertical-align: middle;
+}

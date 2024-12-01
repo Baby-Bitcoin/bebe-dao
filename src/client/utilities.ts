@@ -48,6 +48,23 @@ const prettifyNumber = (num: any) => {
     return `${sign}${num.toFixed(2)}`;
   }
 };
+const getVotingPowerEmoji = (percentage: number): string => {
+  if (percentage < 0.1) return "🦠";
+  if (percentage < 0.25) return "🐚";
+  if (percentage < 0.5) return "🐟";
+  if (percentage < 1) return "🐠";
+  if (percentage < 2) return "🐡";
+  if (percentage < 3) return "🪼";
+  if (percentage < 4) return "🦀";
+  if (percentage < 5) return "🐙";
+  if (percentage < 6) return "🦑";
+  if (percentage < 7) return "🦭";
+  if (percentage < 8) return "🐋";
+  if (percentage < 9) return "🐳";
+  if (percentage < 10) return "🪸";
+  return "🌊";
+};
+
 
 const formatDate = (date) => {
   var currentDate = new Date(date);
@@ -161,5 +178,7 @@ export {
   currentUnixTimestamp,
   overlayMSG,
   debounce,
-  getQueryParams
+  getQueryParams,
+  getVotingPowerEmoji // New function
+
 };

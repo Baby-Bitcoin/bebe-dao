@@ -22,6 +22,7 @@ const { ADMINS } = require("./src/server/configs");
 const Address = require("./src/server/address");
 
 const { getTokenBalance } = require("./src/server/web3"); // Import the balance-fetching function
+const { getTransactionHistory } = require("./src/server/web3");
 
 // Define storage options for post images and address avatars
 const postStorage = createStorage(
@@ -218,6 +219,26 @@ app.post("/address-info", createRateLimiter(100, 15), async (req, res) => {
   } catch (error) {
     console.error("Error fetching address info or balance:", error.message);
     res.status(409).send({ error: error.message });
+  }
+});
+
+// Endpoint for fetching transaction history
+app.get("/transaction-history", createRateLimiter(100, 15), async (req, res) => {
+  const { walletAddress, days } = req.query;
+
+  // Validate query parameters
+  if (!walletAddress || !days) {
+    return res.status(400).json({ error: "Wallet address and days are required" });
+  }
+
+  try {
+    // Fetch transaction history based on wallet and days
+    const transactionHistory = await getTransactionHistory(walletAddress, parseInt(days));
+
+    res.json(transactionHistory);
+  } catch (error) {
+    console.error("Error fetching transaction history:", error.message);
+    res.status(500).json({ error: "Failed to fetch transaction history" });
   }
 });
 
